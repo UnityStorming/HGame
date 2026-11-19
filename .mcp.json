@@ -1,0 +1,16 @@
+{
+  "mcpServers": {
+    "unity-cli": {
+      "command": "unity",
+      "args": ["mcp", "--project-path", "GameUnity"],
+      "env": {
+        "UNITY_NO_BANNER": "1",
+        "UNITY_NON_INTERACTIVE": "1"
+      }
+    },
+    "rider": {
+      "command": "python",
+      "args": ["-m", "mcp_proxy", "http://localhost:64342/sse"]
+    }
+  }
+}

@@ -1,0 +1,316 @@
+schema: comet.native.v4
+name: remove-coplay-mcp-guidance
+language: zh-CN
+phase: archive
+status: done
+state_version: 8
+brief: brief.md
+spec_changes:
+  - capability: mcp-agent-guidance
+    operation: create
+    source: specs/mcp-agent-guidance/spec.md
+  - capability: unity-cli-mcp-test-report
+    operation: modify
+    source: specs/unity-cli-mcp-test-report/spec.md
+workspace:
+  isolation: worktree
+  change_branch: comet/remove-coplay-mcp-guidance
+  target_branch: Unity6000.3
+  finish: merge
+loop:
+  stage: done
+  goal_cycle: 1
+  iteration: 1
+  attempt: 1
+  retry_epoch: 0
+  failed_iteration_count: 0
+  no_progress_count: 0
+  execution_failure_count: 0
+  previous_unresolved_ids: []
+  next_action: null
+acceptance:
+  - id: A1
+    source: brief.md
+    text: 'A1: 在 worktree 中执行 `rg -n -i --hidden
+      "coplay|unity-mcp|McpForUnity|manage_(gameobject|script|asset|scene|components|prefabs|editor|ui|material|shader|texture|animation|camera|graphics|vfx|scriptable_object)|batch_execute|execute_menu_item|unity_reflect|get_test_job|refresh_unity|execute_code"`（排除
+      `.git/`、`.comet/`、`.codegraph/`、`.understand-anything/`、`.worktrees/`、`GameUnity/Library|Temp/`、`docs/comet/archive/`、`docs/comet/changes/`、`docs/unity-cli-mcp-test-report.md`），命中只允许是：`CLAUDE.md`、`AGENTS.md`
+      各 1 行「MCP 工具链」移除说明；两份 `mcp-unity-cli.md` 各 1 行「已核实来源」移除说明；本 change 的
+      replace 规格 `docs/comet/specs/unity-cli-mcp-test-report/spec.md`（归档后）或其它文件
+      0 命中；两份 `evals.json` 中只在 `forbidden_patterns` 出现 `manage_`。'
+    result: passed
+    reason:
+      text: git grep 残留扫描命中恰好 5 行且每文件 1 行：两份 mcp-unity-cli.md「已核实来源」(行10)、CLAUDE.md:41
+        与 AGENTS.md:40「MCP 工具链」、docs/comet/specs/…/spec.md:260（A1
+        允许的归档前规格）；.mcp.json 与 evals.json 对该正则 0 命中，evals.json 的 4 处 manage_ 全在
+        id 11/12/13/18 的 forbidden_patterns
+      truncated: false
+  - id: A2
+    source: brief.md
+    text: 'A2: `.claude/skills/hgame-dev/references/mcp-tools.md` 与
+      `.codex/skills/hgame-dev/references/mcp-tools.md` 不存在；两份 `mcp-visual.md`
+      内容一致，其「工具速查」表首列的每个反引号工具名都属于 `unity list --project-path GameUnity --json`
+      返回的 149 个工具，且文中含 URP 材质 `renderQueue` / 关键字被重置的说明与 "VFX Graph / Timeline
+      未安装" 的标注。'
+    result: passed
+    reason:
+      text: 两份 mcp-tools.md 不存在；两份 mcp-visual.md cmp 一致；工具速查表首列 28 个反引号名全部属于 149 工具集；第
+        58/168 行含 URP renderQueue/_EMISSION 关键字被 MaterialPostprocessor 重置说明；第
+        26/116 行标注 Timeline 与 VFX Graph 未安装（语义满足，非逐字短语）
+      truncated: false
+  - id: A3
+    source: brief.md
+    text: 'A3: 两份 `mcp-unity-cli.md` 内容一致，含二级标题「HGame 落位与 uGUI Prefab
+      流程」「常用菜单项」「常见错误」；「HGame 落位与 uGUI Prefab 流程」含路径表（至少
+      `Assets/Scripts/HotFix/GameLogic/UI/`、`Assets/Scripts/HotFix/GameProto/`、`Assets/BundleAssets/UI/`、`Assets/BundleAssets/UIRaw/`）、CanvasScaler
+      推荐值（`ScaleWithScreenSize`、`1920`、`1080`、`MatchWidthOrHeight`、`0.5`）、`create_prefab`
+      到 `Assets/BundleAssets/UI/` 的步骤与对 `naming-rules.md` 的引用；「已核实来源」含
+      `7600c17e` 与 "`mcp-tools.md` 已删除"。'
+    result: passed
+    reason:
+      text: 两份 mcp-unity-cli.md cmp 一致；三个二级标题存在(206/245/257)；路径表含 4 条必需路径；CanvasScaler
+        含 ScaleWithScreenSize/[1920,1080]/MatchWidthOrHeight/0.5；create_prefab
+        保存到 Assets/BundleAssets/UI/<XxxUI>.prefab；引用 naming-rules.md；已核实来源含
+        7600c17e 与「`mcp-tools.md` 已删除」
+      truncated: false
+  - id: A4
+    source: brief.md
+    text: "A4: 两份 `SKILL.md` 的文档路由表都不含 `mcp-tools.md`，都含指向 `mcp-unity-cli.md` 与
+      `mcp-visual.md` 的行；两份 frontmatter `description` 都不含 `CoplayDev`，都含
+      `unity-cli` 与 `com.unity.pipeline`。"
+    result: passed
+    reason:
+      text: 两份 SKILL.md 均无 mcp-tools，路由表均有 mcp-unity-cli.md 与 mcp-visual.md
+        行；frontmatter description 均无 CoplayDev、含 unity-cli 与
+        com.unity.pipeline（两份第 31–32 行的差异为基线已存在，非本 change 引入）
+      truncated: false
+  - id: A5
+    source: brief.md
+    text: "A5: `CLAUDE.md` 与 `AGENTS.md`：「MCP 工具链」行与「Reference 路由」表不含
+      `mcp-tools.md`，含 `mcp-unity-cli.md` 与 `mcp-visual.md`；「MCP 工具链」行含
+      `7600c17e` 与 `manage_*`（移除说明）。"
+    result: passed
+    reason:
+      text: CLAUDE.md/AGENTS.md 0 处 mcp-tools；「MCP 工具链」行含
+        mcp-unity-cli.md、mcp-visual.md、7600c17e、manage_*；Reference 路由表含两份 mcp
+        文档行
+      truncated: false
+  - id: A6
+    source: brief.md
+    text: "A6: 两份 `evals.json` 内容一致、可被 `json.load` 解析、`evals` 仍为 19 项且 `skill_name`
+      不变；id 11/12/13/18 的 `prompt` 与 `description` 不含
+      `CoplayDev`，`expected_patterns` 中出现的工具名均属于 149 个 unity-cli 工具（id 11 含
+      `write_text_file` 或 `create_script` 与
+      `Assets/Scripts/HotFix/GameLogic/UI`；id 12 含
+      `create_asset`、`set_material_properties`、`Assets/BundleAssets/Materials`、\
+      `Universal Render Pipeline/Lit`；id 13 含
+      `create_animator_controller`、`add_animator_parameter`、`add_animator_state\
+      `、`add_animator_transition`；id 18 含 `Assets/BundleAssets/UI` 与
+      `UIWindow`），四个用例的 `forbidden_patterns` 都含 `manage_`；其余 15 个用例与 `7600c17e`
+      版本逐字相同。"
+    result: passed
+    reason:
+      text: 两份 evals.json cmp 一致、json 可解析、19 项、skill_name=hgame-dev；与 7600c17e 比较仅 id
+        11/12/13/18 变化；四用例无 CoplayDev、forbidden 含 manage_、expected_patterns
+        工具名全部 ∈149、各自必需字面项齐全
+      truncated: false
+  - id: A7
+    source: brief.md
+    text: 'A7: 本 change 目录 `specs/unity-cli-mcp-test-report/spec.md`
+      存在（replace），其「hgame-dev 参考文档」第 1 条不含 `com.coplaydev.unity-mcp`
+      对比描述而含"已移除"；其余内容与 `docs/comet/specs/unity-cli-mcp-test-report/spec.md`
+      逐字相同。'
+    result: passed
+    reason:
+      text: change 目录 replace 规格存在，与 docs/comet/specs 主规格 diff 仅 260c260，新行为「已移除（提交
+        7600c17e）」记录而非对比描述；主规格/archive/测试报告/.mcp.json/GameUnity 相对基线无改动
+      truncated: false
+  - id: A8
+    source: brief.md
+    text: "A8: `C:\\Users\\BingLau\\.claude\\skills\\unity-mcp-skill` 目录不存在。"
+    result: passed
+    reason:
+      text: test -d /c/Users/BingLau/.claude/skills/unity-mcp-skill 不存在
+      truncated: false
+  - id: A9
+    source: brief.md
+    text: "A9: worktree 中 `git status --porcelain --untracked-files=all`
+      只包含：`CLAUDE.md`、`AGENTS.md`、两份 `SKILL.md`、两份 `mcp-unity-cli.md`、两份
+      `mcp-visual.md`、两份被删除的 `mcp-tools.md`、两份
+      `evals.json`、`docs/comet/changes/remove-coplay-mcp-guidance/**`；`.mcp.jso\
+      n`、`docs/unity-cli-mcp-test-report.md`、`docs/comet/archive/**`、`docs/come\
+      t/specs/**`、`GameUnity/**` 无改动；所有改动文本文件 UTF-8 且不含 U+FFFD。"
+    result: passed
+    reason:
+      text: git status 恰为 12 个允许的修改/删除文件 + 4 个
+        docs/comet/changes/remove-coplay-mcp-guidance/** 未跟踪文件，无其他路径；14 个改动文本文件均
+        UTF-8、0 个 U+FFFD
+      truncated: false
+builder_handoff:
+  candidate_id: cae6cd7e-7aaf-49ad-9435-c78e6125b746
+  identity_provider: skill-coordinated
+  builder_execution_ref: skill-coordinated:builder:abfeb955-f226-44db-9424-95d4374cbae3
+  iteration: 1
+  summary:
+    text: 在 worktree .worktrees/remove-coplay-mcp-guidance（分支
+      comet/remove-coplay-mcp-guidance，基于 7600c17e）把 AI 指引改为只以 unity-cli MCP
+      为准：(1) 两份 hgame-dev references/mcp-tools.md 迁移 HGame 通用内容后 git rm；(2) 两份
+      mcp-unity-cli.md 更新「已核实来源」与关联文档，新增「HGame 落位与 uGUI Prefab
+      流程」「常用菜单项」「常见错误」三节；(3) 两份 mcp-visual.md 整篇改写为 unity-cli 版本（工具速查 28 个名字全部属于
+      149 集合，含 URP 材质 renderQueue/关键字重置与 VFX Graph/Timeline
+      未安装说明，ParticleSystem/LineRenderer 路径注明需回读）；(4) 两份 SKILL.md 路由表与
+      description 触发词、CLAUDE.md 与 AGENTS.md 的「MCP 工具链」行（含 7600c17e 移除说明）与
+      Reference 路由表更新，不再引用 mcp-tools.md；(5) 两份 evals.json 只改 id 11/12/13/18 为
+      unity-cli 等价用例，其余 15 个逐字不变；(6) 本 change 以 replace 更新
+      unity-cli-mcp-test-report 规格（仅第 260 行）；(7) 已删除用户级
+      ~/.claude/skills/unity-mcp-skill。所有镜像文件字节级一致，无 U+FFFD。验收检查脚本已在 Build
+      阶段放到主工程 .comet/runtime/checks/rcmg-*.sh（gitignored），Verify 阶段不再写入任何文件。
+    truncated: false
+  addressed_acceptance_ids:
+    - A1
+    - A2
+    - A3
+    - A4
+    - A5
+    - A6
+    - A7
+    - A8
+    - A9
+  checks:
+    - name:
+        text: rcmg-residual.sh（git grep 残留扫描，允许集合比对）
+        truncated: false
+      result: passed
+      note:
+        text: 命中恰为两份 mcp-unity-cli.md:10、CLAUDE.md:41、AGENTS.md:40 与归档前旧规格
+          docs/comet/specs/...:260（由 A7 的 replace 覆盖）
+        truncated: false
+    - name:
+        text: rcmg-content.sh（A2–A9：文件存在性、镜像 diff、工具名∈149、章节/路由/触发词、evals 19
+          项与四用例、replace 规格单行差异、全局 skill 不存在、git 范围、U+FFFD）
+        truncated: false
+      result: passed
+      note:
+        text: 51 项断言全部 OK，rc=0
+        truncated: false
+    - name:
+        text: evals.json 与 git show 7600c17e 版本比对
+        truncated: false
+      result: passed
+      note:
+        text: changed ids = [11, 12, 13, 18]，skill_name 与总数不变
+        truncated: false
+    - name:
+        text: unity-cli 工具实测
+        truncated: false
+      result: not-run
+      note:
+        text: brief 非目标：改写只依据已归档报告与 mcp-unity-cli.md 的既有实测结论；ParticleSystem /
+          LineRenderer 序列化路径在文中标注为需先回读
+        truncated: false
+  checks_truncated: false
+  known_limits:
+    - text: docs/comet/specs/unity-cli-mcp-test-report/spec.md 在归档前仍是旧文本（含 CoplayDev
+        对比一句），归档时由本 change 的 replace 规格覆盖
+      truncated: false
+    - text: mcp-visual.md 中 ParticleSystem / LineRenderer 的序列化路径来自 Unity YAML
+        结构与复核者核对，未在本工程用 unity-cli 实测，文中已注明先 get_serialized_fields 回读
+      truncated: false
+    - text: mcp-unity-cli.md「编辑器生命周期与可观测性（16）」节实际列出 17 个工具（screenshot 同时出现在截图节），为
+        7600c17e 既有问题，不在本 change 范围
+      truncated: false
+    - text: ~/.claude/skills/unity-mcp-skill 的删除在仓库外，Verifier 以 test -d 核对
+      truncated: false
+  known_limits_truncated: false
+  review:
+    status: passed
+    summary:
+      text: 只读复核者（Explore subagent，第一轮）逐项核对第 1–6 项通过：改动集合、残留扫描、镜像一致与 28
+        个工具名∈149、参数名逐条对照 list.json、三节与关键内容、路由与触发词、evals 四用例；指出 LineRenderer 示例路径
+        m_Parameters.startWidth 非真实序列化字段。Builder 修正为
+        m_Parameters.widthMultiplier / widthCurve 并注明 startWidth
+        为运行时属性后，第二轮只读复核（新 subagent）核对修正与第 7–9 项（replace 规格仅第 260 行差异、全局 skill
+        ABSENT、10 个文件 U+FFFD 为 0）全部通过。
+      truncated: false
+    reviewer_execution_ref: claude-code-subagent:Explore:acad9887f6dbe2fa2 (fresh
+      re-review after fix; first-round ref a84678209a0e8f681)
+  submitted_at: 2026-09-14T16:57:27.320Z
+blockers: []
+verification:
+  candidate_id: cae6cd7e-7aaf-49ad-9435-c78e6125b746
+  identity_provider: skill-coordinated
+  verifier_execution_ref: skill-coordinated:verifier:9bdeebf4-10cb-462b-b430-7f226cb29289
+  iteration: 1
+  attempt: 1
+  assurance: skill-coordinated
+  verdict: pass
+  checks:
+    - id: rcmg-residual
+      name:
+        text: A1 残留扫描：CoplayDev / unity-mcp / manage_* 等只出现在允许的入口说明行
+        truncated: false
+      argv_display:
+        - text: F:/Test/DGame/.comet/runtime/checks/rcmg-residual.sh
+          truncated: false
+      argv_truncated: false
+      cwd_ref: .
+      status: passed
+      exit_code: 0
+      duration_ms: 603
+    - id: rcmg-content
+      name:
+        text: A2–A9 内容检查：mcp-tools.md 不存在、镜像一致、工具名属于 149 集合、章节与路由、evals 四用例、replace
+          规格单行差异、全局 skill 不存在、git 范围与 U+FFFD
+        truncated: false
+      argv_display:
+        - text: F:/Test/DGame/.comet/runtime/checks/rcmg-content.sh
+          truncated: false
+      argv_truncated: false
+      cwd_ref: .
+      status: passed
+      exit_code: 0
+      duration_ms: 439
+  summary:
+    text: 在 worktree 上以只读方式独立核对 A1–A9 全部通过：残留扫描命中集合精确等于允许集合；两份
+      mcp-visual.md/mcp-unity-cli.md/evals.json 各自一致且内容满足工具名 ⊆149、URP 重置说明、HGame
+      落位与 uGUI 流程、已核实来源等要求；SKILL.md/CLAUDE.md/AGENTS.md 路由与描述已切换到
+      mcp-unity-cli.md/mcp-visual.md 且不再引用 mcp-tools.md；evals.json
+      仅四用例变化；replace 规格仅第 260 行变化；全局 unity-mcp-skill 已删除；git 改动范围与编码均合规。
+    truncated: false
+  risks:
+    - text: 两份 SKILL.md 存在基线即有的第 31–32 行差异（模块使用/模块系统架构行），本 change 未引入也未修复（brief
+        非目标），建议后续单独同步
+      truncated: false
+    - text: A2 的 'VFX Graph / Timeline 未安装' 以语义标注满足（mcp-visual.md 第 26/116 行），非逐字短语
+      truncated: false
+    - text: 归档后 replace 规格第 260 行仍含 com.coplaydev.unity-mcp（作为已移除记录），未来残留扫描需保留该允许项
+      truncated: false
+  risks_truncated: false
+  completed_at: 2026-09-14T17:26:46.336Z
+history:
+  - goal_cycle: 1
+    iteration: 1
+    attempt: 1
+    outcome: pass
+    unresolved_ids: []
+    summary:
+      text: 在 worktree 上以只读方式独立核对 A1–A9 全部通过：残留扫描命中集合精确等于允许集合；两份
+        mcp-visual.md/mcp-unity-cli.md/evals.json 各自一致且内容满足工具名 ⊆149、URP
+        重置说明、HGame 落位与 uGUI 流程、已核实来源等要求；SKILL.md/CLAUDE.md/AGENTS.md 路由与描述已切换到
+        mcp-unity-cli.md/mcp-visual.md 且不再引用 mcp-tools.md；evals.json
+        仅四用例变化；replace 规格仅第 260 行变化；全局 unity-mcp-skill 已删除；git 改动范围与编码均合规。
+      truncated: false
+    completed_at: 2026-09-14T17:26:46.336Z
+history_overflow:
+  dropped_entries: 0
+  first_dropped_at: null
+  last_dropped_at: null
+  outcome_counts:
+    pass: 0
+    fail: 0
+    blocked: 0
+    execution-error: 0
+    recovery: 0
+verification_result: pass
+verification_report: verification.md
+archived: true
+created_at: 2026-09-14T15:05:44.310Z

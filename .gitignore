@@ -1,0 +1,37 @@
+GenerateDatas/
+Ignore/
+Tools/LubanTools
+Tools/Generata Tools/SourceGenerator/SourceGenerator/bin
+UnityPackage/*.unitypackage
+GameConfig/Tools/LubanTools/
+
+*.vs
+*.idea
+*.dotnet
+
+
+#Generata Tools
+Tools/Generata Tools/SourceGenerator/*/*bin
+Tools/Generata Tools/SourceGenerator/*/*obj
+Tools/Generata Tools/SourceGenerator/*.DotSettings.user
+
+path_define.bat
+path_define.sh
+
+Tools/BuildTools/Log/
+
+# .claude 和 .codex 的hooks缓存文件
+.claude/hooks/.last_idle
+.claude/*/*.log
+.codex/*/*.log
+.codex/hooks/.last_idle
+# >>> Comet managed project state >>>
+!/.comet/
+/.comet/*
+!/.comet/config.yaml
+# <<< Comet managed project state <<<
+.claude/settings.local.json
+
+# 工程 AI 配置迁移备份和 Python 缓存
+/.codex/backups/
+/.codex/**/__pycache__/

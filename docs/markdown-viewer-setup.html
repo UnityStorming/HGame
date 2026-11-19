@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="在 Chrome 或 Edge 安装 Markdown Viewer，开启本地文件访问，为 HGame Markdown 文档提供阅读排版。">
+  <title>HGame · Markdown 阅读扩展安装指南</title>
+  <style>
+    :root { color-scheme: light; --bg: #f5f6f2; --paper: #fff; --ink: #25332d; --muted: #647168; --line: #dfe5dc; --accent: #326547; }
+    * { box-sizing: border-box; }
+    body { margin: 0; background: var(--bg); color: var(--ink); font-family: "Segoe UI", "Microsoft YaHei", "PingFang SC", sans-serif; line-height: 1.75; }
+    a { color: var(--accent); text-underline-offset: 4px; }
+    a:focus-visible { outline: 3px solid var(--accent); outline-offset: 5px; }
+    .page { max-width: 920px; margin: auto; padding: 36px 32px 24px; }
+    .topbar { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding-bottom: 20px; border-bottom: 1px solid var(--line); }
+    .brand { color: var(--ink); font-size: 25px; font-weight: 750; letter-spacing: -1px; text-decoration: none; }
+    .brand span { color: var(--accent); }
+    .back { font-size: 13px; }
+    header { margin: 36px 0 28px; }
+    .eyebrow { color: var(--accent); font-size: 12px; font-weight: 700; letter-spacing: 2px; }
+    h1 { margin: 10px 0 14px; font-size: clamp(28px, 4vw, 38px); line-height: 1.35; letter-spacing: -1px; }
+    .intro { margin: 0; color: var(--muted); font-size: 15px; }
+    .steps { margin: 0; padding: 0; list-style: none; }
+    .step { margin-bottom: 16px; padding: 24px 28px; border: 1px solid var(--line); border-radius: 10px; background: var(--paper); }
+    .heading { display: flex; align-items: baseline; gap: 12px; }
+    .number { color: var(--accent); font-size: 12px; font-weight: 700; }
+    h2 { margin: 0; font-size: 20px; font-weight: 650; }
+    h3 { margin: 0 0 8px; font-size: 16px; }
+    p { margin: 12px 0; font-size: 14px; }
+    .stores { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; margin: 18px 0; }
+    .store { display: block; padding: 16px 20px; border: 1px solid #d5dfcf; border-radius: 8px; background: #eaf0e6; text-decoration: none; }
+    .store:hover { background: #dfe9d9; border-color: #7b9c7e; }
+    .store strong { display: block; font-size: 16px; }
+    .store span { display: block; margin-top: 4px; font-size: 12px; color: var(--muted); }
+    .muted { color: var(--muted); font-size: 13px; }
+    code { padding: 2px 6px; border-radius: 4px; background: #eef2eb; font-family: Consolas, "Courier New", monospace; font-size: 13px; overflow-wrap: anywhere; }
+    .instructions { padding-left: 22px; font-size: 14px; }
+    .instructions li { margin: 8px 0; }
+    .important { padding: 12px 16px; border-left: 3px solid var(--accent); background: #f1f5ed; }
+    .button { display: inline-block; padding: 10px 18px; border: 1px solid var(--accent); border-radius: 6px; background: var(--accent); color: #fff; font-size: 14px; text-decoration: none; }
+    .button:hover { background: #254f35; }
+    .options { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
+    .options p { margin-bottom: 0; }
+    .faq { margin: 32px 0; }
+    .faq h2 { margin-bottom: 14px; }
+    details { padding: 14px 0; border-bottom: 1px solid var(--line); }
+    summary { cursor: pointer; font-size: 14px; font-weight: 600; }
+    details p { margin-bottom: 2px; color: var(--muted); }
+    footer { padding-top: 18px; border-top: 1px solid var(--line); color: var(--muted); }
+    footer p { font-size: 12px; }
+    @media (max-width: 600px) {
+      .page { padding: 22px 18px; }
+      header { margin-top: 28px; }
+      .step { padding: 20px 18px; }
+      .stores, .options { grid-template-columns: 1fr; }
+      h2 { font-size: 18px; }
+    }
+    @media print { body { background: #fff; } .page { padding: 0; } .step { break-inside: avoid; } }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <div class="topbar">
+      <a class="brand" href="index.html">HGame<span>.</span></a>
+      <a class="back" href="index.html">← 返回文档索引</a>
+    </div>
+    <main>
+      <header>
+        <div class="eyebrow">HGAME / READING SETUP</div>
+        <h1>为 Markdown 文档开启阅读排版</h1>
+        <p class="intro">浏览器直接打开 MD 时，通常显示原始文本。安装 Markdown Viewer 并允许访问本地文件后，即可阅读排版后的标题、表格和代码块。文档仍只维护原始 MD，修改后刷新页面即可。</p>
+      </header>
+
+      <ol class="steps" aria-label="安装与配置步骤">
+        <li class="step">
+          <div class="heading"><span class="number" aria-hidden="true">01</span><h2>安装 Markdown Viewer</h2></div>
+          <p>用你阅读文档的浏览器打开对应商店，在商店页面点击安装并按提示确认。</p>
+          <div class="stores">
+            <a class="store" href="https://chrome.google.com/webstore/detail/markdown-viewer/ckkdlimhmcjmikdlpkmbgfkaikojcbjk" target="_blank" rel="noopener noreferrer"><strong>Chrome · 打开扩展商店 ↗</strong><span>Chrome Web Store / Markdown Viewer</span></a>
+            <a class="store" href="https://microsoftedge.microsoft.com/addons/detail/markdown-viewer/cgfmehpekedojlmjepoimbfcafopimdg" target="_blank" rel="noopener noreferrer"><strong>Edge · 打开扩展商店 ↗</strong><span>Microsoft Edge Add-ons / Markdown Viewer</span></a>
+          </div>
+          <p class="muted">以上链接来自 <a href="https://github.com/simov/markdown-viewer" target="_blank" rel="noopener noreferrer">simov/markdown-viewer 官方项目</a>。商店无法访问时，可查阅项目 README 中的安装说明。</p>
+        </li>
+
+        <li class="step">
+          <div class="heading"><span class="number" aria-hidden="true">02</span><h2>打开扩展详情</h2></div>
+          <p>将下面与你的浏览器对应的地址复制到地址栏，按 Enter：</p>
+          <ul class="instructions">
+            <li>Chrome：<code>chrome://extensions</code></li>
+            <li>Edge：<code>edge://extensions</code></li>
+          </ul>
+          <p>找到 <strong>Markdown Viewer</strong>，确认扩展已启用，然后点击<strong>“详情”</strong>。</p>
+          <p class="muted">浏览器内部设置地址需要在地址栏打开，普通网页中的链接可能无法跳转。</p>
+        </li>
+
+        <li class="step">
+          <div class="heading"><span class="number" aria-hidden="true">03</span><h2>允许访问本地文件</h2></div>
+          <p>在扩展详情中开启<strong>“允许访问文件网址”</strong>或<strong>“允许访问文件 URL”</strong>，英文为 <code>Allow access to file URLs</code>。不同浏览器版本的中文名称可能略有差异。</p>
+          <p class="important">这是本地阅读的关键设置：HGame 文档从工程目录打开，扩展需要此权限才能渲染这些 MD 文件。</p>
+        </li>
+
+        <li class="step">
+          <div class="heading"><span class="number" aria-hidden="true">04</span><h2>打开文档，验证排版</h2></div>
+          <p>点击下方按钮打开现有架构文档。若之前已打开该文件，安装配置后刷新一次。</p>
+          <p><a class="button" href="../.codex/skills/hgame-dev/references/architecture.md">打开架构文档，验证阅读效果 ↗</a></p>
+          <ul class="instructions">
+            <li>“HGame 架构与项目结构”显示为大标题，开头的 <code>#</code> 不再作为正文出现。</li>
+            <li>“程序集划分”中的内容显示为表格。</li>
+            <li>代码块保持等宽字体与换行，原始围栏符号不再作为正文出现。</li>
+          </ul>
+          <p>验证成功后，<a href="index.html">返回索引</a>继续阅读其他文档。每位同事在自己的浏览器中配置一次即可，工程可以 Clone 到不同目录。</p>
+        </li>
+      </ol>
+
+      <section class="step" aria-labelledby="options-title">
+        <h2 id="options-title">可选：目录与自动刷新</h2>
+        <p>在浏览器扩展菜单中打开 Markdown Viewer，进入 <strong>Content</strong> 内容选项，可按需要开启：</p>
+        <div class="options">
+          <div><h3>TOC · 文档目录</h3><p class="muted">根据标题生成目录，便于跳转到长文档的不同章节。</p></div>
+          <div><h3>Autoreload · 自动刷新</h3><p class="muted">本地 MD 保存后自动重新加载。保持默认关闭时，手动刷新也能看到最新文档。</p></div>
+        </div>
+      </section>
+
+      <section class="faq" aria-labelledby="faq-title">
+        <h2 id="faq-title">常见问题</h2>
+        <details>
+          <summary>安装了扩展，为什么仍显示原始文本？</summary>
+          <p>检查当前浏览器中的扩展是否启用、是否已开启本地文件访问，并刷新 MD 页面。若扩展切换到了 Raw 原始视图，请切回渲染视图。多个 Markdown 扩展同时启用时，可暂时关闭其他同类扩展后重试。</p>
+        </details>
+        <details>
+          <summary>换电脑或换浏览器后，需要重新设置吗？</summary>
+          <p>需要在实际阅读文档的浏览器中确认扩展已安装，并检查本地文件权限。索引和验证文档使用相对路径，工程位置改变后仍可使用。</p>
+        </details>
+        <details>
+          <summary>修改文档后，如何看到最新内容？</summary>
+          <p>保存 MD 后刷新浏览器页面，或开启 Autoreload 自动刷新。索引仍直接链接原始 MD，因此没有额外的 HTML 文档副本需要同步。</p>
+        </details>
+      </section>
+    </main>
+    <footer>
+      <p><a href="index.html">← 返回 HGame 文档索引</a> · 安装与选项说明依据 <a href="https://github.com/simov/markdown-viewer#after-install" target="_blank" rel="noopener noreferrer">Markdown Viewer 官方文档</a>，扩展界面以当前安装版本为准。</p>
+    </footer>
+  </div>
+</body>
+</html>

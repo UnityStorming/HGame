@@ -1,0 +1,401 @@
+schema: comet.native.v4
+name: unity-cli-mcp-full-test
+language: zh-CN
+phase: archive
+status: done
+state_version: 11
+brief: brief.md
+spec_changes:
+  - capability: unity-cli-mcp-test-report
+    operation: create
+    source: specs/unity-cli-mcp-test-report/spec.md
+workspace:
+  isolation: current
+  change_branch: Unity6000.3
+  target_branch: Unity6000.3
+  finish: null
+loop:
+  stage: done
+  goal_cycle: 2
+  iteration: 2
+  attempt: 1
+  retry_epoch: 0
+  failed_iteration_count: 0
+  no_progress_count: 0
+  execution_failure_count: 0
+  previous_unresolved_ids: []
+  next_action: null
+acceptance:
+  - id: A1
+    source: brief.md
+    text: "A1: 报告文件 `docs/unity-cli-mcp-test-report.md` 存在，开头有环境段（Unity
+      `6000.3.10f1`、`unity` CLI `1.0.0-beta.9`、`com.unity.pipeline`
+      `0.6.0-exp.1`、测试日期、执行档位），工具结果表恰好覆盖 `unity list --project-path GameUnity
+      --json` 返回的 149 个工具名，每个工具恰好一行，结果列取值仅限 `通过`、`失败`、`预期不可用`、`跳过` 四种。"
+    result: passed
+    reason:
+      text: 报告存在且环境段含 Unity 6000.3.10f1 / CLI 1.0.0-beta.9 / com.unity.pipeline
+        0.6.0-exp.1 / 日期 2026-09-12 / 深度档；Verifier 自行运行 unity list 得 149 个名字，报告
+        §3 解析出 149 行、无重复、缺失与多余均为空，15 类计数全部相符；结果列仅 通过140/失败1/预期不可用8
+      truncated: false
+  - id: A2
+    source: brief.md
+    text: 'A2: 结果为 `失败` 或 `跳过` 的每一行都写明原因；`预期不可用` 只出现在依赖缺失包或未连接 Player
+      的工具上（`create_timeline`、`add_timeline_track`、`add_timeline_clip`、`get_timeline`、`bake_navmesh_surfaces`、`reload_file_player_interpreter`，以及
+      `audit` / `audit_status` 在返回 `unavailable`
+      时）；报告末尾有「发现的问题」段，逐条记录实测异常、与文档不符或可疑行为（无则写"无"）。'
+    result: passed
+    reason:
+      text: 唯一失败行 clear_baked_lighting（第 181 行）写明 dry_run 被 confirm 门拦截（问题 1）；无跳过行；8
+        个预期不可用恰为允许集合且 audit/audit_status 返回 unavailable；§5 发现的问题 16 条
+      truncated: false
+  - id: A3
+    source: brief.md
+    text: "A3: 报告中每个工具的执行方式与 Spec「执行策略表」一致；策略为「真实执行」的工具结果只能是 `通过` 或 `失败`，不能是
+      `跳过`；策略为「dry_run + 拒绝门」的工具需同时记录 `dry_run=true` 的预览返回与 `confirm=false`
+      时的拒绝返回。"
+    result: passed
+    reason:
+      text: 程序化比对 149/149 工具执行方式与 Spec 策略表一致，无真实执行+跳过；7 个 dry_run+拒绝门行中 6
+        个按工具能力记录了可获得的返回。bake_lighting 只记录 dry_run 预览不构成未通过：源码
+        LightingBakeCommands.cs:58 声明 confirm 但 61–98 行从未读取，dryRun=false 即无条件
+        BakeAsync，拒绝返回���物理上不存在，获取 confirm=false 返回必须真实烘焙而 brief 非目标禁止；Spec
+        该行输入要点仅 dry_run=true；与 switch_build_target 无 dry_run 参数对称；缺门事实已记为问题 2
+        并写入 skill 安全门
+      truncated: false
+  - id: A4
+    source: brief.md
+    text: "A4: 报告记录的端到端链路结果满足：`create_script` 后 `recompile_status` 到达
+      `completed`/`up_to_date` 且 `attach_script` 成功；临时测试程序集写入后 `list_tests` 数量 ≥
+      1，`run_tests` 后 `test_status` 报告全部通过；`batch` 的 `dry_run`
+      不产生对象、事务成功批次创建的对象可被 `find_gameobjects` 找到、含故意失败操作的事务批次回滚后其对象不存在。"
+    result: passed
+    reason:
+      text: 报告 §3.6/§3.12/§3.15/§4：recompile_status up_to_date
+        failed:false，attach_script type= 与 script= 各成功；list_tests
+        0→2，run_tests/test_status completed 2/2 passed；batch dry_run
+        applied:0，事务成功 McpTxDone 可被 find_gameobjects 找到，失败批次 applied:1
+        reverted:true 且 McpTxFail 不存在；GameUnity/Temp/mcp-test/worklog.md 第
+        54/60/67 行独立佐证
+      truncated: false
+  - id: A5
+    source: brief.md
+    text: "A5: 测试结束后，相对测试前的 `git status --porcelain` 只包含
+      `docs/unity-cli-mcp-test-report.md`、`docs/comet/**`、`GameUnity/Assets/Sce\
+      nes/GameStart/GameStart.unity`（仅来自测试前的 `save_all` 写盘）以及 D8 列出的
+      skill/路由文档；`GameUnity/Assets/PipelineMcpTest/`（及 `.meta`）与
+      `GameUnity/AgentScripts/`
+      不存在；`GameUnity/ProjectSettings/*.asset`、`GameUnity/Packages/manifest.json\
+      `、`GameUnity/Packages/packages-lock.json` 无改动；`GameStart.unity` 在测试前
+      `save_all` 之后的 SHA-256 与测试结束时一致（报告记录该哈希与 `git diff --stat` 结果）。"
+    result: passed
+    reason:
+      text: git status --porcelain --untracked-files=all 恰为两份
+        SKILL.md、CLAUDE.md、AGENTS.md、GameStart.unity、两份
+        mcp-unity-cli.md、docs/comet/**
+        三文件、报告；PipelineMcpTest(.meta)/AgentScripts/Assets/Temp/ProjectSettings/Packages/com.unity.pipeline
+        均不存在；ProjectSettings 与 Packages 无 diff；GameStart SHA-256
+        61dfc63a…23ad23cfff 与报告一致，diff --stat 4 ++++
+      truncated: false
+  - id: A6
+    source: brief.md
+    text: "A6: 测试结束后编辑器终态：`list_open_scenes` 只含
+      `Assets/Scenes/GameStart/GameStart.unity` 且
+      `isActive=true`、`isDirty=false`；`editor_status` 的
+      `playMode=stopped`、`status=ready`；`get_authoring_root` 返回
+      `Assets`；`get_tags_layers` 不含 `McpTestTag`；`get_build_settings`
+      的场景列表与测试前一致。"
+    result: passed
+    reason:
+      text: list_open_scenes 仅 GameStart isActive=true isDirty=false；editor_status
+        status=ready playMode=stopped；get_authoring_root=Assets；get_tags_layers
+        无 McpTestTag；get_build_settings.scenes 仅 GameStart enabled，与 HEAD 的
+        EditorBuildSettings.asset 一致
+      truncated: false
+  - id: A7
+    source: brief.md
+    text: "A7: `.claude/skills/hgame-dev/references/mcp-unity-cli.md` 与
+      `.codex/skills/hgame-dev/references/mcp-unity-cli.md`
+      内容一致，包含「已核实来源」（包名与版本、`.mcp.json` 配置、`unity list` 数量 149）、「安全门」（`confirm` /
+      `dry_run` 约定与永不真实执行的工具清单）、「路径与 authoring root」、「按分类的工具速查」（覆盖 15 类、149
+      个工具名）、「端到端链路模板」（脚本编译、测试、批处理、Play 往返）与「已知问题」（与报告「发现的问题」一致）六节；两份 `SKILL.md`
+      的文档路由表、根 `CLAUDE.md` 与 `AGENTS.md` 的「第一步」主题表及「Reference 路由」表都新增指向
+      `mcp-unity-cli.md` 的条目，且现有条目不被删除。"
+    result: passed
+    reason:
+      text: diff 两份 mcp-unity-cli.md 无差异；六个 H2 齐全；已核实来源含包版本、.mcp.json
+        配置、149；安全门含约定与永不执行清单；速查表 15 类 149 名全部命中；链路模板含编译/测试/batch/Play；已知问题 16
+        条对应报告；两份 SKILL.md、CLAUDE.md、AGENTS.md 的第一步主题表与 Reference 路由表均新增
+        mcp-unity-cli.md 且 mcp-tools.md/mcp-visual.md 条目保留；U+FFFD 为 0
+      truncated: false
+  - id: A8
+    source: brief.md
+    text: "A8: 报告附录记录以下六条命令的退出码与关键返回字段：`unity status --json`（含本工程条目与端口 7800）、`unity
+      list --project-path GameUnity --json`（`count=149`）、`unity command
+      editor_status --project-path GameUnity --json`（`status=ready`）、`unity
+      command --help`、`unity mcp configure --list`、`unity job
+      --help`；任一命令失败时如实记录输出。"
+    result: passed
+    reason:
+      text: 实测六条命令 rc 均 0：status --json instances[0] port 7800/project
+        GameUnity/6000.3.10f1/ready；list count=149 target.port=7800；command
+        editor_status status=ready playMode=stopped；command --help 用法行含
+        --project-path/--detach；mcp configure --list 17 个客户端；job --help
+        用法行；与报告附录一致
+      truncated: false
+builder_handoff:
+  candidate_id: e14afbb3-e19b-407a-ac5d-82461a40cec6
+  identity_provider: skill-coordinated
+  builder_execution_ref: skill-coordinated:builder:43034f2a-95cc-4bc6-9a5f-1e4322c6f3c7
+  iteration: 2
+  summary:
+    text: 对 unity-cli MCP（com.unity.pipeline 0.6.0-exp.1，unity CLI 1.0.0-beta.9）全部
+      149 个工具在 GameUnity（Unity 6000.3.10f1）上按深度档逐一实测：140 通过、1
+      失败（clear_baked_lighting 的 dry_run 被 confirm 门先拦截）、8 预期不可用（Timeline 4、audit
+      2、bake_navmesh_surfaces、reload_file_player_interpreter）、0 跳过。产出
+      docs/unity-cli-mcp-test-report.md（环境、汇总、15 类结果表、端到端链路、16 条发现的问题、CLI
+      冒烟附录）；新增 .claude 与 .codex 两份内容一致的 hgame-dev
+      references/mcp-unity-cli.md（六节），并在两份 SKILL.md、CLAUDE.md、AGENTS.md 登记路由。测试前
+      save_all 时 GameStart 已无脏场景（其 4 行改动早于测试，SHA-256 61dfc63a… 前后一致）。临时资产
+      Assets/PipelineMcpTest、AgentScripts、临时 Tag、RuntimePipelineConfig.json
+      已清理；被 set_* 以新格式重写的 ProjectSettings/*.asset（值已恢复）用 git checkout
+      复原字节原样。编辑器终态：只开 GameStart、非 Play、authoring root=Assets、无
+      McpTestTag、构建场景列表与测试前一致。Build 期间 brief/spec 唯一改动是修正分类计数（16/13/12/3，合计仍
+      149），已重新 --confirmed。 第 2 轮候选与第 1 轮实现完全相同：上一轮进入 Verify 后因在 .comet/runtime
+      下写入验收检查脚本被 Runtime 判为实现写入而回到
+      Build；本轮不再有任何文件改动，检查脚本已就位（.comet/runtime/checks/*.sh，被 git 忽略），dispatch
+      阶段不会再写入文件。
+    truncated: false
+  addressed_acceptance_ids:
+    - A1
+    - A2
+    - A3
+    - A4
+    - A5
+    - A6
+    - A7
+    - A8
+  checks:
+    - name:
+        text: unity list count vs report rows (python compare, 149/149, no dup/missing,
+          result values in 4-set)
+        truncated: false
+      result: passed
+      note:
+        text: 见报告第 3 节；复核者独立重跑一致
+        truncated: false
+    - name:
+        text: git status --porcelain --untracked-files=all
+        truncated: false
+      result: passed
+      note:
+        text: 只含报告、docs/comet/**、GameStart.unity(4 行既有改动)、两份 mcp-unity-cli.md、两份
+          SKILL.md、CLAUDE.md、AGENTS.md；ProjectSettings/ 与 Packages/ 无改动
+        truncated: false
+    - name:
+        text: sha256sum GameStart.unity
+        truncated: false
+      result: passed
+      note:
+        text: 61dfc63a6805fa591701ee4a427a43d21014d618b1c545f163625623ad23cfff 前后一致
+        truncated: false
+    - name:
+        text: editor terminal state (list_open_scenes / editor_status /
+          get_authoring_root / get_tags_layers / get_build_settings)
+        truncated: false
+      result: passed
+      note:
+        text: 只开 GameStart isActive=true isDirty=false；ready/stopped；Assets；无
+          McpTestTag；scenes=[GameStart]
+        truncated: false
+    - name:
+        text: diff .claude vs .codex mcp-unity-cli.md + 149 tool names in quick-ref +
+          six section headers
+        truncated: false
+      result: passed
+      note:
+        text: IDENTICAL；missing=[]
+        truncated: false
+    - name:
+        text: rg mcp-unity-cli in SKILL.md x2 / CLAUDE.md / AGENTS.md
+        truncated: false
+      result: passed
+      note:
+        text: 1/1/2/2 命中，原 mcp-tools/mcp-visual 条目保留
+        truncated: false
+    - name:
+        text: "CLI smoke: 6 commands exit code"
+        truncated: false
+      result: passed
+      note:
+        text: 全部 0；list count=149；editor_status ready；status port 7800
+        truncated: false
+    - name:
+        text: U+FFFD scan on report/docs/brief/spec
+        truncated: false
+      result: passed
+      note:
+        text: 均为 0
+        truncated: false
+    - name:
+        text: EditMode tests via run_tests (PipelineMcpTest.Editor, temporary)
+        truncated: false
+      result: passed
+      note:
+        text: 2/2 passed，程序集已随临时目录删除
+        truncated: false
+    - name:
+        text: bake_lighting no-confirm refusal
+        truncated: false
+      result: not-run
+      note:
+        text: 该命令 confirm 不强制，不带 dry_run 会真实烘焙（brief 非目标禁止），报告问题 2 已披露
+        truncated: false
+  checks_truncated: false
+  known_limits:
+    - text: bake_lighting / bake_navmesh / bake_occlusion_culling 的『无 confirm
+        被拒』未验证（按参数描述 confirm 不强制）
+      truncated: false
+    - text: reload_file_player_interpreter 与 Timeline / AI Navigation / Project
+        Auditor 相关工具因无 Player / 未安装包只验证了错误返回
+      truncated: false
+    - text: 热重载在默认 enableInBuilds=false 下不可用；报告与 skill
+        文档已记录前提与实测验证（enableInBuilds=true 后成功）
+      truncated: false
+    - text: GameUnity/Temp/mcp-test/（截图、worklog、list.json）保留在被 gitignore 的 Temp 目录中
+      truncated: false
+  known_limits_truncated: false
+  review:
+    status: passed
+    summary:
+      text: 第 2 轮新的只读复核者（Explore subagent）独立核对：报告第 3 节 149 行与 unity list 完全一致、汇总
+        140/1/8/0 与执行方式 134/7/8 与表格统计一致；两份 mcp-unity-cli.md diff 为空、六节齐全、速查覆盖
+        149 工具、四个状态命令已改为 A 标记；git 范围与 GameStart SHA-256 符合；编辑器终态符合；七个文件 U+FFFD
+        均为 0；四个验收检查脚本确认只读。总体结论：通过。
+      truncated: false
+    reviewer_execution_ref: claude-code-subagent:Explore:af6a4458d2d11283d
+  submitted_at: 2026-09-11T22:22:36.114Z
+blockers: []
+verification:
+  candidate_id: e14afbb3-e19b-407a-ac5d-82461a40cec6
+  identity_provider: skill-coordinated
+  verifier_execution_ref: skill-coordinated:verifier:0c87a553-9b28-4293-b367-e987ada865fc
+  iteration: 2
+  attempt: 1
+  assurance: skill-coordinated
+  verdict: pass
+  checks:
+    - id: report-covers-149
+      name:
+        text: 报告结果表恰好覆盖 unity list 的 149 个工具且结果列取值合法
+        truncated: false
+      argv_display:
+        - text: .comet/runtime/checks/report-covers-149.sh
+          truncated: false
+      argv_truncated: false
+      cwd_ref: .
+      status: passed
+      exit_code: 0
+      duration_ms: 312
+    - id: git-residue
+      name:
+        text: 工作树无残留：git 范围、临时目录不存在、GameStart SHA-256 不变、ProjectSettings/Packages 无改动
+        truncated: false
+      argv_display:
+        - text: .comet/runtime/checks/git-residue.sh
+          truncated: false
+      argv_truncated: false
+      cwd_ref: .
+      status: passed
+      exit_code: 0
+      duration_ms: 205
+    - id: skill-docs
+      name:
+        text: 两份 mcp-unity-cli.md 一致、六节齐全、速查覆盖 149 工具、四处路由登记、无替换字符
+        truncated: false
+      argv_display:
+        - text: .comet/runtime/checks/skill-docs.sh
+          truncated: false
+      argv_truncated: false
+      cwd_ref: .
+      status: passed
+      exit_code: 0
+      duration_ms: 361
+    - id: editor-and-cli
+      name:
+        text: 编辑器终态（场景 / 状态 / authoring root / tags / 构建场景）与六条 CLI 冒烟命令退出码
+        truncated: false
+      argv_display:
+        - text: .comet/runtime/checks/editor-and-cli.sh
+          truncated: false
+      argv_truncated: false
+      cwd_ref: .
+      status: passed
+      exit_code: 0
+      duration_ms: 11266
+  summary:
+    text: 八项验收全部通过。报告恰好覆盖 unity list 的 149 个工具且执行方式与 Spec 策略表逐一一致；唯一失败项
+      clear_baked_lighting 与 8 个预期不可用均有明确原因并落入允许集合；bake_lighting 仅记录 dry_run
+      预览经源码核实是因为该命令没有 confirm 拒绝门且真实烘焙被 brief 禁止，不构成 A3
+      未通过；仓库改动集合、临时目录、ProjectSettings/Packages、GameStart 哈希、编辑器终态、两份 skill
+      文档与四处路由登记、六条 CLI 冒烟均经 Verifier 独立实测符合要求。
+    truncated: false
+  risks:
+    - text: 报告问题 2 对 bake_lighting「confirm 不强制」为按描述记录；Verifier 已从源码
+        LightingBakeCommands.cs:58/61–98 证实 confirm 从未被读取，建议后续修订时引用源码行号
+      truncated: false
+    - text: GameStart.unity 的 4 行改动在测试开始前已在磁盘（mtime 2026-09-11 23:50:32），并非测试的
+        save_all 产生；内容为 UICamera m_ClearFlags 覆盖，哈希全程不变，是否提交由用户决定
+      truncated: false
+    - text: 非 git 残留：GameUnity/Temp/mcp-test/ 与 .comet/runtime/checks/*.sh 均被
+        gitignore，无害
+      truncated: false
+  risks_truncated: false
+  completed_at: 2026-09-11T22:38:51.115Z
+history:
+  - goal_cycle: 1
+    iteration: 1
+    attempt: 0
+    outcome: recovery
+    unresolved_ids: []
+    summary:
+      text: Formal requirement write requested for brief.md
+      truncated: false
+    completed_at: 2026-09-11T21:09:42.621Z
+  - goal_cycle: 2
+    iteration: 1
+    attempt: 0
+    outcome: recovery
+    unresolved_ids: []
+    summary:
+      text: Observed implementation write before
+        .comet/runtime/dispatch-verifier-unity-cli-mcp-full-test.json
+      truncated: false
+    completed_at: 2026-09-11T21:52:41.160Z
+  - goal_cycle: 2
+    iteration: 2
+    attempt: 1
+    outcome: pass
+    unresolved_ids: []
+    summary:
+      text: 八项验收全部通过。报告恰好覆盖 unity list 的 149 个工具且执行方式与 Spec 策略表逐一一致；唯一失败项
+        clear_baked_lighting 与 8 个预期不可用均有明确原因并落入允许集合；bake_lighting 仅记录 dry_run
+        预览经源码核实是因为该命令没有 confirm 拒绝门且真实烘焙被 brief 禁止，不构成 A3
+        未通过；仓库改动集合、临时目录、ProjectSettings/Packages、GameStart 哈希、编辑器终态、两份 skill
+        文档与四处路由登记、六条 CLI 冒烟均经 Verifier 独立实测符合要求。
+      truncated: false
+    completed_at: 2026-09-11T22:38:51.115Z
+history_overflow:
+  dropped_entries: 0
+  first_dropped_at: null
+  last_dropped_at: null
+  outcome_counts:
+    pass: 0
+    fail: 0
+    blocked: 0
+    execution-error: 0
+    recovery: 0
+verification_result: pass
+verification_report: verification.md
+archived: true
+created_at: 2026-09-11T15:24:12.019Z

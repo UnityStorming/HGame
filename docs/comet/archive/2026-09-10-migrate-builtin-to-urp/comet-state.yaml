@@ -1,0 +1,394 @@
+schema: comet.native.v4
+name: migrate-builtin-to-urp
+language: zh-CN
+phase: archive
+status: done
+state_version: 10
+brief: brief.md
+spec_changes:
+  - capability: render-pipeline
+    operation: create
+    source: specs/render-pipeline/spec.md
+workspace:
+  isolation: worktree
+  change_branch: comet/migrate-builtin-to-urp
+  target_branch: Unity6000.3
+  finish: merge
+loop:
+  stage: done
+  goal_cycle: 2
+  iteration: 1
+  attempt: 1
+  retry_epoch: 0
+  failed_iteration_count: 0
+  no_progress_count: 0
+  execution_failure_count: 0
+  previous_unresolved_ids: []
+  next_action: null
+acceptance:
+  - id: A1
+    source: brief.md
+    text: 'A1: `GameUnity/Packages/manifest.json` 含
+      `"com.unity.render-pipelines.universal":
+      "17.3.0"`；`GameUnity/Packages/packages-lock.json` 中
+      `com.unity.render-pipelines.universal`、`com.unity.render-pipelines.core`、`com.unity.shadergraph`
+      版本均为 `17.3.0`。'
+    result: passed
+    reason:
+      text: manifest.json:14 声明 universal 17.3.0；packages-lock.json 中
+        universal/core/shadergraph 均为 17.3.0（行 146、160、195）
+      truncated: false
+  - id: A2
+    source: brief.md
+    text: "A2:
+      `GameUnity/Assets/Settings/URP/HGame_URPAsset.asset`、`HGame_URPRenderer.a\
+      sset`、`UniversalRenderPipelineGlobalSettings.asset`、`DefaultVolumeProfile\
+      .asset` 及各自 `.meta` 存在，`GameUnity/Assets/` 根目录下没有 URP 自动生成的
+      `UniversalRenderPipelineGlobalSettings.asset` /
+      `DefaultVolumeProfile.asset`；`HGame_URPAsset.asset` 序列化字段为 `m_SupportsHDR:
+      0`、`m_MSAA: 1`、`m_MainLightShadowsSupported:
+      0`、`m_AdditionalLightShadowsSupported: 0`、`m_RequireDepthTexture:
+      0`、`m_RequireOpaqueTexture: 0`、`m_RenderScale: 1`、`m_UseSRPBatcher:
+      1`、`m_SupportsDynamicBatching: 0`，且 `m_RendererDataList` 引用
+      `HGame_URPRenderer.asset`（`m_RenderingMode: 0` Forward）。"
+    result: passed
+    reason:
+      text: Assets/Settings/URP 下 4 个 .asset + .meta 齐全，Assets
+        根无重复全局设置/VolumeProfile；HGame_URPAsset 九个字段值全部符合，m_RendererDataList GUID
+        6ad0393e… 对应 HGame_URPRenderer.asset.meta，Renderer m_RenderingMode 0
+      truncated: false
+  - id: A3
+    source: brief.md
+    text: "A3: `ProjectSettings/GraphicsSettings.asset` 的 `m_CustomRenderPipeline` 与
+      `ProjectSettings/QualitySettings.asset` 六个质量等级的 `customRenderPipeline` 都引用
+      `HGame_URPAsset.asset.meta` 中的 GUID；`GraphicsSettings.asset` 的
+      `m_RenderPipelineGlobalSettingsMap` 含
+      `UnityEngine.Rendering.Universal.UniversalRenderPipeline`
+      条目；`ProjectSettings.asset` 的 `m_ActiveColorSpace` 仍为 0。"
+    result: passed
+    reason:
+      text: GraphicsSettings m_CustomRenderPipeline 与六个质量等级 customRenderPipeline 均为
+        GUID a5affba9354f0b04cb9e565d61ba13cd；m_RenderPipelineGlobalSettingsMap
+        含 UniversalRenderPipeline → 44abb5e6…；ProjectSettings.asset
+        m_ActiveColorSpace 0 且无 diff
+      truncated: false
+  - id: A4
+    source: brief.md
+    text: "A4: `GameStart.unity` 中 Main Camera 挂有
+      `UniversalAdditionalCameraData`（`m_CameraType: 0`），其 `m_Cameras` 包含 UIRoot
+      实例的 UICamera；`UIRoot.prefab` 中 UICamera 挂有
+      `UniversalAdditionalCameraData`（`m_CameraType: 1`）与
+      `UIOverlayCameraBinder`，`UICanvas` 的 `m_RenderMode: 1` 且 `m_Camera` 引用
+      UICamera；`SceneUI.unity` 中 UICamera 实例的 `m_CameraType` 覆盖为 0。"
+    result: passed
+    reason:
+      text: GameStart.unity Main Camera UACD m_CameraType 0，m_Cameras 含 stripped
+        Camera 3662584843660349294（源 UIRoot.prefab
+        3662584843330752890）；UIRoot.prefab UICamera UACD m_CameraType 1 +
+        UIOverlayCameraBinder，UICanvas m_RenderMode 1、m_Camera 指向
+        UICamera；SceneUI.unity 覆盖 m_CameraType 0
+      truncated: false
+  - id: A5
+    source: brief.md
+    text: "A5: `Assets/HGame/Runtime/Module/RenderPipeline/UIOverlayCameraBinder.cs`
+      存在于 `namespace HGame`，在 `OnEnable` 与 `SceneManager.sceneLoaded` 中把自身相机加入
+      `Camera.main` 的 `cameraStack`（已存在不重复），`Camera.main` 为空时不抛异常，`OnDisable`
+      注销回调；`HGame.Runtime.asmdef` 的 `references` 含
+      `Unity.RenderPipelines.Universal.Runtime`；`GameLogic.asmdef`、`GameProto.a\
+      smdef`、`GameBattle.asmdef` 不含任何 `Unity.RenderPipelines` 引用。"
+    result: passed
+    reason:
+      text: UIOverlayCameraBinder.cs 位于 namespace HGame，OnEnable 订阅 sceneLoaded 并
+        Bind，Camera.main 为空/非 Base 直接 return，Contains 去重，OnDisable
+        注销；HGame.Runtime.asmdef 含 GUID
+        15fc0a57…（Unity.RenderPipelines.Universal.Runtime）；GameLogic/GameProto/GameBattle
+        asmdef 与 Assets/Scripts 无任何 URP 引用
+      truncated: false
+  - id: A6
+    source: brief.md
+    text: "A6: 以 Unity 6000.3.10f1 用 `-batchmode -quit -nographics -logFile` 打开
+      worktree 的 `GameUnity` 工程：日志 0 个 `error CS`，无 `Shader
+      error`，无包解析失败（`Package resolution failed`/`Cannot resolve`），正常退出。"
+    result: passed
+    reason:
+      text: unity_verify_compile.log（6000.3.10f1）error CS 0、Shader error 0、无 Package
+        resolution failed/Cannot resolve，末尾 Exiting batchmode successfully /
+        return code 0
+      truncated: false
+  - id: A7
+    source: brief.md
+    text: "A7: `Unity.exe -batchmode -quit -projectPath <worktree>/GameUnity
+      -executeMethod HGame.URPSetupValidator.RunBatch -reportPath <report.json>
+      -logFile ...`（不带 `-nographics`）退出码 0；报告 JSON `passed:
+      true`，`packageResolved`、`pipelineAssigned`、`qualityLevelsAssigned`、`pipel\
+      ineAssetConfig`、`cameraStack`、`canvasBinding`、`shaderErrors`、`renderSmoke`
+      全部 `passed`（`shaderErrors.detail` 记录两个 TMP Surface Shader 为
+      skipped），`renderSmoke.detail` 记录不同颜色像素数 > 1 且洋红像素数 = 0（该测试以 UICamera 临时作为
+      Base 相机渲染 UI 画布；相机堆叠配置由 `cameraStack`/`canvasBinding` 保证）。"
+    result: passed
+    reason:
+      text: urp-verify-report.json passed=true，8 项 passed；shaderErrors checked=14
+        skipped=2，renderSmoke distinctColors>=64、magentaPixels=0；smoke.png 目视含
+        UI 文字与下拉控件、无洋红；RunBatch 经 EditorApplication.Exit(0) 退出，Runtime 记录退出码 0
+      truncated: false
+  - id: A8
+    source: brief.md
+    text: "A8: `.claude/skills/hgame-dev/references/architecture.md` 与
+      `.codex/skills/hgame-dev/references/architecture.md` 均含 `URP
+      17.3`、`Assets/Settings/URP/`、`UIOverlayCameraBinder`；两份 `mcp-visual.md` 含
+      `GameLogic/Module/UIModule/Expansion`。"
+    result: passed
+    reason:
+      text: .claude 与 .codex 两份 architecture.md:104-106 含 URP 17.3 /
+        Assets/Settings/URP/ / UIOverlayCameraBinder；两份 mcp-visual.md:98 含
+        GameLogic/Module/UIModule/Expansion
+      truncated: false
+  - id: A9
+    source: brief.md
+    text: "A9: 相对目标分支 `Unity6000.3`，`git diff` 显示以下文件无改动：3 个自定义
+      Shader、`Assets/Plugins/TextMesh
+      Pro/Shaders/**`、`Assets/BundleAssets/Materials/*.mat`、`Assets/Editor/Asse\
+      tBundleCollector/AssetBundleCollectorSetting.asset`、`ProjectSettings/Hybr\
+      idCLRSettings.asset`、`ProjectSettings/Obfuz.asset`、`Assets/HGame/Runtime/\
+      Setting/UpdateSettings.asset`。"
+    result: passed
+    reason:
+      text: git diff --stat Unity6000.3 对 3 个自定义 Shader、TMP
+        Shaders、BundleAssets/Materials、AssetBundleCollectorSetting.asset、HybridCLRSettings.asset、Obfuz.asset、UpdateSettings.asset
+        输出为空，且无未跟踪文件
+      truncated: false
+builder_handoff:
+  candidate_id: 85b0bd31-37a5-4df6-9a6e-af0547816c04
+  identity_provider: skill-coordinated
+  builder_execution_ref: skill-coordinated:builder:9cf1e8f8-756a-4bb4-bf36-cd94dabc4f80
+  iteration: 1
+  summary:
+    text: 在 worktree 上把 GameUnity 从 Built-in 切到 URP 17.3.0：manifest 加入
+      com.unity.render-pipelines.universal 17.3.0（依赖由 UPM 解析；首次需把主工程 Library 复制到
+      worktree，因 gitee 上的 HybridCLR git 包本机无法克隆）；新建 Assets/Settings/URP/ 下
+      HGame_URPAsset（HDR/MSAA/阴影/Depth/Opaque 关、SRP Batcher
+      开）、HGame_URPRenderer（Forward）、UniversalRenderPipelineGlobalSettings、DefaultVolumeProfile，删除
+      URP 在 Assets 根目录自动生成的重复文件；GraphicsSettings 与六个质量等级指向同一 URP
+      Asset；UIRoot.prefab 的 UICamera 改为 Overlay 并挂
+      UIOverlayCameraBinder（HGame.Runtime 新组件，场景加载后自动加入 Camera.main 堆叠），UICanvas
+      绑定 UICamera；GameStart.unity Main Camera 为 Base 且堆叠含 UICamera；SceneUI.unity
+      中 UICamera 覆盖为 Base；HGame.Runtime/HGame.Editor asmdef 增加 URP/Core Runtime
+      引用，热更程序集不引用 URP；新增 HGame.Editor 的 URPMigrationTool（可重复执行）与
+      URPSetupValidator（8 项检查 + UI 渲染烟雾测试，-reportPath/-smokeDump）；更新
+      .claude/.codex 两份 hgame-dev 的 architecture.md 与 mcp-visual.md。用户 Q4
+      决定（D9）：编辑模式离屏 RenderRequest 不输出 Overlay 相机内容，renderSmoke 改为临时以 UICamera 作
+      Base 渲染 UI；brief A2/A7、D9/D10 与 Spec 已同步（Runtime 保存的 A2/A7
+      原文仍成立，只是新文本更具体）。所有改动未提交。
+    truncated: false
+  addressed_acceptance_ids:
+    - A1
+    - A2
+    - A3
+    - A4
+    - A5
+    - A6
+    - A7
+    - A8
+    - A9
+  checks:
+    - name:
+        text: Unity 6000.3.10f1 -batchmode -quit -nographics
+          编译（.comet/unity_compile.log）
+        truncated: false
+      result: passed
+      note:
+        text: error CS 0，无 Shader error / 包解析失败，Exiting batchmode successfully
+        truncated: false
+    - name:
+        text: Unity -batchmode -executeMethod HGame.URPSetupValidator.RunBatch
+          -reportPath .comet/urp-report.json -smokeDump .comet/smoke.png
+        truncated: false
+      result: passed
+      note:
+        text: 退出码
+          0；packageResolved/pipelineAssigned/qualityLevelsAssigned/pipelineAssetConfig/cameraStack/canvasBinding/shaderErrors(checked=14,
+          skipped=2)/renderSmoke(distinctColors>=64, magentaPixels=0) 全部
+          passed；smoke.png 可见按钮、描边文字、引导遮罩，无洋红
+        truncated: false
+    - name:
+        text: Unity -batchmode -nographics -executeMethod
+          HGame.URPMigrationTool.RunBatch（幂等重跑）
+        truncated: false
+      result: passed
+      note:
+        text: 退出码 0，迁移完成，未再生成根目录孤儿资产
+        truncated: false
+    - name:
+        text: git diff --stat Unity6000.3 -- 3 个自定义 Shader / TMP Shaders /
+          BundleAssets/Materials / AssetBundleCollectorSetting /
+          HybridCLRSettings / Obfuz / UpdateSettings
+        truncated: false
+      result: passed
+      note:
+        text: 为空（A9）
+        truncated: false
+    - name:
+        text: 热更 asmdef（GameLogic/GameProto/GameBattle）无 RenderPipelines
+          引用；ProjectSettings.asset m_ActiveColorSpace 仍为 0
+        truncated: false
+      result: passed
+      note: null
+    - name:
+        text: Play 模式运行时相机堆叠目视验证
+        truncated: false
+      result: not-run
+      note:
+        text: 编辑模式离屏请求不渲染 Overlay 相机；需用户打开 worktree 工程 Play 确认（D9）
+        truncated: false
+  checks_truncated: false
+  known_limits:
+    - text: 编辑模式的离屏 RenderRequest 不输出 Overlay 相机内容，renderSmoke 以 UICamera 临时作 Base
+        渲染；运行时 Base+Overlay 堆叠效果需用户在编辑器 Play 目视确认一次。
+      truncated: false
+    - text: QualitySettings.asset 中 Ultra 的 antiAliasing 被 URP 自动从 2 同步为 0（Very High
+        仍为 2）；URP 下该字段不生效（MSAA 由 URP Asset 控制），与 D8 一致。GraphicsSettings 的
+        m_LightsUseColorTemperature 由 URP 写为 1，工程无灯光，无影响。
+      truncated: false
+    - text: URPMigrationTool 迁移工具保留在 HGame.Editor（D10）；批处理入口 RunBatch 直接调用无守卫的
+        MigrateInternal。
+      truncated: false
+    - text: worktree 首次批处理导入需复制主工程 Library（gitee HybridCLR git 包本机无法重新克隆）；.comet 目录下的
+        Unity 日志与 smoke.png 为本机证据，被 gitignore。
+      truncated: false
+    - text: 未做真机与 Player 打包（非目标）。
+      truncated: false
+  known_limits_truncated: false
+  review:
+    status: passed
+    summary:
+      text: 只读复核（ae954b35461739a1a）逐项核实 A1–A9 通过、无越界改动、无必须修复项，给出 5 条非阻塞观察；Builder 修复其中
+        3 条（菜单入口保存守卫、RenderTexture.active finally 恢复与 smokeDump 目录创建、行尾/BOM
+        统一）后由增量复核（a1490cf6f9c7445c4）确认无新问题，其建议的 RunBatch→MigrateInternal
+        结构拆分也已完成并重跑迁移批处理通过。
+      truncated: false
+    reviewer_execution_ref: claude-code-subagent:a1490cf6f9c7445c4
+  submitted_at: 2026-09-10T15:13:09.874Z
+blockers: []
+verification:
+  candidate_id: 85b0bd31-37a5-4df6-9a6e-af0547816c04
+  identity_provider: skill-coordinated
+  verifier_execution_ref: skill-coordinated:verifier:5fe937d6-725f-4d76-8895-ac1e8185209a
+  iteration: 1
+  attempt: 1
+  assurance: skill-coordinated
+  verdict: pass
+  checks:
+    - id: unity-compile-nographics
+      name:
+        text: "A6 Unity 6000.3.10f1 batchmode -nographics compile (log:
+          .comet/unity_verify_compile.log)"
+        truncated: false
+      argv_display:
+        - text: -batchmode
+          truncated: false
+        - text: -quit
+          truncated: false
+        - text: -nographics
+          truncated: false
+        - text: -projectPath
+          truncated: false
+        - text: F:/Test/DGame/.worktrees/migrate-builtin-to-urp/GameUnity
+          truncated: false
+        - text: -logFile
+          truncated: false
+        - text: F:/Test/DGame/.worktrees/migrate-builtin-to-urp/.comet/unity_verify_compile.log
+          truncated: false
+      argv_truncated: false
+      cwd_ref: .
+      status: passed
+      exit_code: 0
+      duration_ms: 18031
+    - id: urp-setup-validator
+      name:
+        text: "A7 HGame.URPSetupValidator.RunBatch (report:
+          .comet/urp-verify-report.json, dump: .comet/urp-verify-smoke.png)"
+        truncated: false
+      argv_display:
+        - text: -batchmode
+          truncated: false
+        - text: -quit
+          truncated: false
+        - text: -projectPath
+          truncated: false
+        - text: F:/Test/DGame/.worktrees/migrate-builtin-to-urp/GameUnity
+          truncated: false
+        - text: -executeMethod
+          truncated: false
+        - text: HGame.URPSetupValidator.RunBatch
+          truncated: false
+        - text: -reportPath
+          truncated: false
+        - text: F:/Test/DGame/.worktrees/migrate-builtin-to-urp/.comet/urp-verify-report.json
+          truncated: false
+        - text: -smokeDump
+          truncated: false
+        - text: F:/Test/DGame/.worktrees/migrate-builtin-to-urp/.comet/urp-verify-smoke.png
+          truncated: false
+        - text: -logFile
+          truncated: false
+        - text: F:/Test/DGame/.worktrees/migrate-builtin-to-urp/.comet/unity_verify_validate.log
+          truncated: false
+      argv_truncated: false
+      cwd_ref: .
+      status: passed
+      exit_code: 0
+      duration_ms: 20410
+  summary:
+    text: A1–A9 全部通过：URP 17.3.0 包、Assets/Settings/URP 资产与配置、项目设置、相机堆叠/画布绑定、AOT 侧
+      UIOverlayCameraBinder 与 asmdef 边界、编译与校验工具报告、文档更新、受保护文件零改动均经独立取证确认。
+    truncated: false
+  risks:
+    - text: 运行时相机堆叠效果（Play 模式下 Overlay 相机经 Main Camera 堆叠显示、场景切换后
+        UIOverlayCameraBinder 重绑）未做目视验证，建议用户打开 GameStart 场景 Play 确认。
+      truncated: false
+    - text: URP 自动写入的副作用：GraphicsSettings m_LightsUseColorTemperature 0→1、Ultra 等级
+        antiAliasing 2→0、QualitySettings/场景 serializedVersion 升级；对纯 UGUI
+        工程无实际影响。
+      truncated: false
+    - text: 批处理日志开头出现 '.comet is not a valid directory name' 提示，源于命令行传入 .comet
+        目录路径，未影响输出。
+      truncated: false
+    - text: 验证日志因 EditorApplication.Exit 退出而不含 'Exiting batchmode successfully' 字样，退出码
+        0 依赖 Runtime 进程记录。
+      truncated: false
+  risks_truncated: false
+  completed_at: 2026-09-10T15:24:45.274Z
+history:
+  - goal_cycle: 1
+    iteration: 1
+    attempt: 0
+    outcome: recovery
+    unresolved_ids: []
+    summary:
+      text: Native confirmed acceptance criteria changed
+      truncated: false
+    completed_at: 2026-09-10T15:08:01.925Z
+  - goal_cycle: 2
+    iteration: 1
+    attempt: 1
+    outcome: pass
+    unresolved_ids: []
+    summary:
+      text: A1–A9 全部通过：URP 17.3.0 包、Assets/Settings/URP 资产与配置、项目设置、相机堆叠/画布绑定、AOT 侧
+        UIOverlayCameraBinder 与 asmdef 边界、编译与校验工具报告、文档更新、受保护文件零改动均经独立取证确认。
+      truncated: false
+    completed_at: 2026-09-10T15:24:45.274Z
+history_overflow:
+  dropped_entries: 0
+  first_dropped_at: null
+  last_dropped_at: null
+  outcome_counts:
+    pass: 0
+    fail: 0
+    blocked: 0
+    execution-error: 0
+    recovery: 0
+verification_result: pass
+verification_report: verification.md
+archived: true
+created_at: 2026-09-10T01:45:20.113Z

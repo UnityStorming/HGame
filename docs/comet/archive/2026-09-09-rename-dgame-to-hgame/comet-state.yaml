@@ -1,0 +1,378 @@
+schema: comet.native.v4
+name: rename-dgame-to-hgame
+language: zh-CN
+phase: archive
+status: done
+state_version: 11
+brief: brief.md
+spec_changes:
+  - capability: project-naming
+    operation: create
+    source: specs/project-naming/spec.md
+workspace:
+  isolation: current
+  change_branch: Unity6000.3
+  target_branch: Unity6000.3
+  finish: null
+loop:
+  stage: done
+  goal_cycle: 2
+  iteration: 2
+  attempt: 1
+  retry_epoch: 0
+  failed_iteration_count: 0
+  no_progress_count: 0
+  execution_failure_count: 0
+  previous_unresolved_ids: []
+  next_action: null
+acceptance:
+  - id: A1
+    source: brief.md
+    text: "A1: 在仓库文本文件中执行边界感知搜索 `rg -i -P '(?<![A-Za-z])dgame'`（排除
+      `.git/`、`.codegraph/`、`GameUnity/Library|Temp|Logs|obj/`、`GameUnity/*.csp\
+      roj`、`GameUnity/*.sln`、`GameUnity/.vs/`、`GameUnity/UserSettings/`、`.comet\
+      /`、`docs/comet/`、`.claude/hooks/*.log`、`Tools/Generata
+      Tools/SourceGenerator/*/obj|bin/`），剩余命中只允许是 `.codex/hooks.json` 与
+      `.claude/settings.local.json` 中的本机绝对路径 `F:\\Test\\DGame`。"
+    result: passed
+    reason:
+      text: rg --hidden 边界扫描仅剩 .claude/settings.local.json:11,15 与 .codex/hooks.json:9
+        的 F:/Test/DGame 本机路径；git grep --cached 与 tracked-but-ignored
+        文件交叉核对无其他文本残留，DLL 内仅 PDB 路径串
+      truncated: false
+  - id: A2
+    source: brief.md
+    text: "A2: 目录
+      `GameUnity/Assets/HGame`、`GameUnity/Assets/HGame.AOT`、`GameUnity/Assets/E\
+      ditor/HGameSettingsProvider`、`GameUnity/Assets/HGame/Runtime/Core/HGameLo\
+      g`、`GameUnity/Assets/HGame/Runtime/Core/HGameStruct`、`.claude/skills/hgam\
+      e-dev`、`.codex/skills/hgame-dev` 存在，对应旧 DGame 路径不存在；`git status` 中所有
+      `.meta` 均表现为重命名（内容 diff 为空），即 GUID 全部保留。"
+    result: passed
+    reason:
+      text: 7 个新目录存在、旧路径（含 .meta）不存在；暂存 310 个 .meta 全部 R100
+      truncated: false
+  - id: A3
+    source: brief.md
+    text: "A3: 四个 asmdef 文件名与 `name` 字段分别为
+      `HGame.Runtime`、`HGame.Editor`、`HGame.AOT`、`HGame.Obfuz`（`rootNamespace` 为
+      `HGame` 或保持原空值），`guid`（.meta）不变；`HybridCLRSettings.asset` 的
+      patchAOTAssemblies、`Obfuz.asset` 的程序集列表、`UpdateSettings.asset` 与
+      `UpdateSettings.cs` 的 `AOTMetaAssemblies`、`TypeUtil.cs` 的程序集名列表均使用
+      `HGame.*`。"
+    result: passed
+    reason:
+      text: 四个 asmdef 文件名/name/rootNamespace 符合，.asmdef.meta 均 R100 无内容
+        diff；HybridCLRSettings:32、Obfuz:27/29、UpdateSettings.asset:24、UpdateSettings.cs:82、TypeUtil.cs:12-24
+        均为 HGame.*
+      truncated: false
+  - id: A4
+    source: brief.md
+    text: "A4: `RootModule.cs` 与 `GameEntry.prefab` 中的反射类型名为
+      `HGame.HGameStringUtilHelper`、`HGame.HGameLogHelper`、`HGame.NewtonsoftJso\
+      nHelper`/`HGame.DefaultJsonHelper`，且这些类型在 `HGame`
+      命名空间下真实存在；`AtlasRefWindowSettings.asset` 的 `m_EditorClassIdentifier` 使用
+      `HGame` 命名空间。"
+    result: passed
+    reason:
+      text: RootModule.cs:32/35/38 与 GameEntry.prefab:243-245 类型名正确，四个 helper 类均在
+        namespace HGame 下真实定义；AtlasRefWindowSettings.asset:14 使用 HGame，对应
+        AtlasRefWindow.cs:11 namespace HGame
+      truncated: false
+  - id: A5
+    source: brief.md
+    text: "A5: 以 Unity 6000.3.10f1 用 `-batchmode -quit -logFile` 方式打开 `GameUnity`
+      工程，日志中没有 `error CS` 编译错误，也没有 \"Assembly with name 'DGame\" / 找不到 `DGame`
+      类型的报错。"
+    result: passed
+    reason:
+      text: unity_batch_verify.log 0 error CS、无 DGame
+        程序集报错、成功退出（增量无操作构建）；unity_batch2.log 含 Csc HGame.Runtime/AOT/Editor.dll
+        全量编译 0 错误，其后源码无再改动
+      truncated: false
+  - id: A6
+    source: brief.md
+    text: 'A6: `Tools/BuildTools/*.bat|sh` 中 `-executeMethod` 目标全部为
+      `HGame.ReleaseTools.*`；SourceGenerator 三个 `Definition.cs` 中
+      `DefaultFrameworkNameSpace = "HGame"`、`DefaultDebugName =
+      "HGame.DLogger"`、`UsingNameSpace` 含
+      `"HGame"`；`GameConfig/CustomTemplate/Client/Bin/ConfigSystem.cs` 与
+      `GameUnity/Assets/Scripts/HotFix/GameProto/ConfigSystem.cs` 均为 `using
+      HGame;`。'
+    result: passed
+    reason:
+      text: BuildTools 16 个脚本 -executeMethod 全为
+        HGame.ReleaseTools.*；SourceGenerator/Definition.cs:11-14 与
+        UIControllerGenerator/Definition.cs:6 符合；两处 ConfigSystem.cs:2 均 using
+        HGame;
+      truncated: false
+  - id: A7
+    source: brief.md
+    text: "A7: 改名前后 `rg -c 'LoadGameObject'` 与 `rg -c 'DLogger'`
+      在源码目录的命中总数不变；`GameUnity/Assets/YooAsset/**/LoadGameObjectOperation.cs`
+      路径不变。"
+    result: passed
+    reason:
+      text: HEAD vs 暂存区 git grep -c：LoadGameObject 30/30、DLogger
+        251/251；LoadGameObjectOperation.cs 路径未变且不在 diff 中
+      truncated: false
+  - id: A8
+    source: brief.md
+    text: "A8: `README.md`、`CLAUDE.md`、`AGENTS.md` 中不再出现 DGame / `dgame-dev`，改为
+      HGame / `hgame-dev`；`README.md` 的 GitHub 链接指向
+      `https://github.com/ifunxgame/HGame`；`.claude/skills/hgame-dev/SKILL.md`
+      frontmatter `name: hgame-dev`。"
+    result: passed
+    reason:
+      text: "README/CLAUDE/AGENTS 无 DGame/dgame；README 链接 ifunxgame/HGame；.claude 与
+        .codex 的 hgame-dev SKILL.md name: hgame-dev"
+      truncated: false
+builder_handoff:
+  candidate_id: 8d800470-69c9-4a43-bf57-803e7fadc3a6
+  identity_provider: skill-coordinated
+  builder_execution_ref: skill-coordinated:builder:d18c916e-d2f2-413a-9a41-5995f83d743a
+  iteration: 2
+  summary:
+    text: （第 2 轮候选，实现与第 1 轮完全相同；回到 Build 仅因在 Verify 期间新增只读验证脚本
+      .comet/verify_rename.py 被 Runtime 记为恢复，未改动任何项目实现文件。）对全部 git
+      跟踪/非忽略文本文件做大小写敏感、边界感知替换（DGame→HGame、dgame→hgame、DGAME→HGAME，430 个文件；跳过
+      docs/comet、.comet、.codex/hooks.json、.claude/settings.local.json
+      中的本机绝对路径）；用 git mv 重命名
+      Assets/DGame→HGame、DGame.AOT→HGame.AOT、Editor/DGameSettingsProvider→HGameSettingsProvider、Runtime/Core/DGameLog→HGameLog、DGameStruct→HGameStruct、四个
+      asmdef、16 个 DGame*.cs 类型文件、.claude/.codex 的 dgame-dev→hgame-dev、luban-dev
+      的 dgame-*.md→hgame-*.md，全部连带 .meta（599 个 R100 纯重命名，GUID 不变）；README GitHub
+      链接改为 ifunxgame/HGame（与 git remote 一致）。首轮 Unity batchmode 报 57 个 error
+      CS，根因是 Roslyn 源生成器 DLL 内嵌 `using DGame;`，已用 dotnet 8 SDK Release 重编
+      SourceGenerator.dll 与 UIControllerGenerator.dll 并替换（记为 D6）。第二轮 Unity
+      6000.3.10f1 batchmode 编译 0 个 error CS、正常退出。改动已全部 git add 暂存，未提交。
+    truncated: false
+  addressed_acceptance_ids:
+    - A1
+    - A2
+    - A3
+    - A4
+    - A5
+    - A6
+    - A7
+    - A8
+  checks:
+    - name:
+        text: boundary-aware residual scan (git ls-files + untracked, incl. hidden dirs)
+        truncated: false
+      result: passed
+      note:
+        text: 仅剩 .codex/hooks.json 与 .claude/settings.local.json 中的本机绝对路径
+          F:/Test/DGame，属非目标允许项
+        truncated: false
+    - name:
+        text: "git diff --cached -M --name-status: all .meta are R100"
+        truncated: false
+      result: passed
+      note:
+        text: 599 个重命名条目，.meta 无 M/A/D；guid 无变化
+        truncated: false
+    - name:
+        text: asmdef name/rootNamespace; HybridCLRSettings/Obfuz/UpdateSettings/TypeUtil
+          assembly names
+        truncated: false
+      result: passed
+      note:
+        text: HGame.Runtime/HGame.Editor/HGame.AOT/HGame.Obfuz；rootNamespace
+          HGame/HGame/空/空
+        truncated: false
+    - name:
+        text: reflection type names in RootModule.cs / GameEntry.prefab /
+          AtlasRefWindowSettings.asset
+        truncated: false
+      result: passed
+      note:
+        text: HGame.HGameStringUtilHelper、HGame.HGameLogHelper、HGame.DefaultJsonHelper/NewtonsoftJsonHelper
+          均在 namespace HGame 下真实存在
+        truncated: false
+    - name:
+        text: Unity 6000.3.10f1 -batchmode -quit -nographics -logFile
+          (.comet/unity_batch2.log)
+        truncated: false
+      result: passed
+      note:
+        text: error CS 0 条，无 Assembly with name 'DGame'，Exiting batchmode
+          successfully，退出码 0；首轮 .comet/unity_batch.log 有 57 个 CS0246 已通过重编源生成器
+          DLL 修复
+        truncated: false
+    - name:
+        text: BuildTools -executeMethod / SourceGenerator Definition.cs /
+          ConfigSystem.cs using / GameUnity/.gitignore
+        truncated: false
+      result: passed
+      note:
+        text: 8 个目标全为
+          HGame.ReleaseTools.*；DefaultFrameworkNameSpace=HGame、DefaultDebugName=HGame.DLogger；两个
+          ConfigSystem.cs 均 using HGame;
+        truncated: false
+    - name:
+        text: "A7 counts: LoadGameObject 30→30, DLogger 251→251;
+          LoadGameObjectOperation.cs path unchanged"
+        truncated: false
+      result: passed
+      note: null
+    - name:
+        text: README/CLAUDE/AGENTS no dgame; README links ifunxgame/HGame; hgame-dev
+          SKILL.md name
+        truncated: false
+      result: passed
+      note: null
+    - name:
+        text: dotnet build SourceGenerator.csproj & UIControllerGenerator.csproj -c
+          Release
+        truncated: false
+      result: passed
+      note:
+        text: 0 Error(s)，仅 RS1036 警告
+        truncated: false
+    - name:
+        text: CRLF/BOM/encoding preservation (git diff --cached --stat vs -w
+          --ignore-cr-at-eol --stat)
+        truncated: false
+      result: passed
+      note:
+        text: 统计完全一致，.bat 保持 CRLF
+        truncated: false
+    - name:
+        text: python .comet/verify_rename.py (55 read-only checks for A1-A4/A6-A8)
+        truncated: false
+      result: passed
+      note:
+        text: 0 failure(s)
+        truncated: false
+  checks_truncated: false
+  known_limits:
+    - text: 另外 4 个源生成器
+        DLL（GameEventAnalyzer、DataCenterModuleGenerator、FrameSpritePoolGenerator、GameInputDefineGenerator）内部仍含编译期
+        ASCII 路径 \DGame\Tools\...，不含 UTF-16 用户字符串，Unity 编译通过，未重编（brief 未要求）。
+      truncated: false
+    - text: GameUnity/DGame.*.csproj 为 Unity 自动生成的未跟踪文件，仍在磁盘上；用户重新打开 Unity 后会生成
+        HGame.*.csproj，旧文件可自行删除（brief 非目标）。
+      truncated: false
+    - text: 本机绝对路径 F:\Test\DGame（.codex/hooks.json、.claude/settings.local.json）与本地分支
+        DGame_Unity6+ 按非目标保留。
+      truncated: false
+    - text: batchmode 验证只覆盖编译；未在 Play 模式运行游戏。
+      truncated: false
+  known_limits_truncated: false
+  review:
+    status: passed
+    summary:
+      text: 第 2 轮只读复核 subagent 独立核查：暂存集 760 文件 +7518/-7518
+        与上一轮一致；.comet/verify_rename.py 为纯只读脚本，运行 56 项 PASS / 0
+        FAIL；asmdef、反射类型名、BuildTools、README 链接、.gitignore、残留扫描、.meta R100、Unity
+        日志 0 个 error CS、无子串误伤（A7 计数 30/251）全部通过；无必须修复项。
+      truncated: false
+    reviewer_execution_ref: claude-code-subagent:a612f84e988a48a6c
+  submitted_at: 2026-09-09T16:15:39.923Z
+blockers: []
+verification:
+  candidate_id: 8d800470-69c9-4a43-bf57-803e7fadc3a6
+  identity_provider: skill-coordinated
+  verifier_execution_ref: skill-coordinated:verifier:66164fc8-277a-43b9-82a9-6d26523bbcb4
+  iteration: 2
+  attempt: 1
+  assurance: skill-coordinated
+  verdict: pass
+  checks:
+    - id: acceptance-script
+      name:
+        text: A1-A4/A6-A8 read-only acceptance script (.comet/verify_rename.py)
+        truncated: false
+      argv_display:
+        - text: .comet/verify_rename.py
+          truncated: false
+      argv_truncated: false
+      cwd_ref: .
+      status: passed
+      exit_code: 0
+      duration_ms: 2426
+    - id: unity-batchmode-compile
+      name:
+        text: "A5 Unity 6000.3.10f1 batchmode compile (log:
+          .comet/unity_batch_verify.log)"
+        truncated: false
+      argv_display:
+        - text: -batchmode
+          truncated: false
+        - text: -quit
+          truncated: false
+        - text: -nographics
+          truncated: false
+        - text: -projectPath
+          truncated: false
+        - text: F:/Test/DGame/GameUnity
+          truncated: false
+        - text: -logFile
+          truncated: false
+        - text: F:/Test/DGame/.comet/unity_batch_verify.log
+          truncated: false
+      argv_truncated: false
+      cwd_ref: .
+      status: passed
+      exit_code: 0
+      duration_ms: 10411
+  summary:
+    text: A1–A8 全部独立取证通过，760 文件暂存改动均为纯 DGame→HGame 映射，无 GUID/CRLF/子串误伤，Unity
+      6000.3.10f1 batchmode 编译 0 错误。
+    truncated: false
+  risks:
+    - text: GameUnity/DGame.*.csproj（7 个未跟踪自动生成文件）仍在磁盘，属非目标，用户重开 Unity 后可手动删除
+      truncated: false
+    - text: GameEventAnalyzer/DataCenterModuleGenerator/FrameSpritePoolGenerator/GameInputDefineGenerator
+        四个 DLL 未重编，内嵌仅为旧 PDB 路径字符串，不影响生成代码
+      truncated: false
+    - text: 验证仅覆盖 batchmode 编译，未做 Play 模式运行验证（反射 helper 类型加载、Obfuz、HybridCLR 链路未运行时验证）
+      truncated: false
+    - text: .codex/skills/hgame-dev/agents/openai.yaml 在 git 中表现为 D/A 而非
+        R（小文件相似度低），内容为纯改名，历史关联会丢失
+      truncated: false
+  risks_truncated: false
+  completed_at: 2026-09-09T16:32:21.995Z
+history:
+  - goal_cycle: 1
+    iteration: 1
+    attempt: 0
+    outcome: recovery
+    unresolved_ids: []
+    summary:
+      text: Formal requirement write requested for brief.md
+      truncated: false
+    completed_at: 2026-09-09T15:12:01.932Z
+  - goal_cycle: 2
+    iteration: 1
+    attempt: 0
+    outcome: recovery
+    unresolved_ids: []
+    summary:
+      text: Observed implementation write before .comet/verify_rename.py
+      truncated: false
+    completed_at: 2026-09-09T15:24:39.215Z
+  - goal_cycle: 2
+    iteration: 2
+    attempt: 1
+    outcome: pass
+    unresolved_ids: []
+    summary:
+      text: A1–A8 全部独立取证通过，760 文件暂存改动均为纯 DGame→HGame 映射，无 GUID/CRLF/子串误伤，Unity
+        6000.3.10f1 batchmode 编译 0 错误。
+      truncated: false
+    completed_at: 2026-09-09T16:32:21.995Z
+history_overflow:
+  dropped_entries: 0
+  first_dropped_at: null
+  last_dropped_at: null
+  outcome_counts:
+    pass: 0
+    fail: 0
+    blocked: 0
+    execution-error: 0
+    recovery: 0
+verification_result: pass
+verification_report: verification.md
+archived: true
+created_at: 2026-09-07T15:54:45.530Z

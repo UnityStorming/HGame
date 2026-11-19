@@ -1,0 +1,4 @@
+interface:
+  display_name: "Luban Dev"
+  short_description: "HGame Luban 配置表开发与导表工具"
+  default_prompt: "Use $luban-dev to edit HGame Luban config tables and regenerate client config assets."

@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="HGame 使用文档索引：架构、模块 API、UI、资源、热更、AI 初始化、工作流、MCP 与 Skill。">
+  <title>HGame · 使用文档</title>
+  <style>
+    :root { color-scheme: light; --bg: #f5f6f2; --paper: #fff; --ink: #25332d; --muted: #647168; --line: #dfe5dc; --accent: #326547; }
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; scroll-padding-top: 24px; }
+    body { margin: 0; background: var(--bg); color: var(--ink); font-family: "Segoe UI", "Microsoft YaHei", "PingFang SC", sans-serif; line-height: 1.65; }
+    a { color: inherit; text-decoration: none; }
+    a:focus-visible { outline: 3px solid var(--accent); outline-offset: 5px; }
+    .skip { position: fixed; top: -100px; left: 20px; padding: 10px 16px; background: var(--paper); z-index: 2; }
+    .skip:focus { top: 12px; }
+    .layout { display: grid; grid-template-columns: 240px minmax(0, 1fr); max-width: 1440px; margin: auto; }
+    aside { position: sticky; top: 0; height: 100vh; padding: 44px 28px; border-right: 1px solid var(--line); }
+    .brand { display: block; font-size: 27px; font-weight: 750; letter-spacing: -1px; }
+    .brand span { color: var(--accent); }
+    .subtitle { margin: 4px 0 36px; color: var(--muted); font-size: 13px; }
+    .nav-label, .eyebrow { color: var(--accent); font-size: 12px; font-weight: 700; letter-spacing: 2px; }
+    nav { display: grid; gap: 7px; margin-top: 14px; }
+    nav a { padding: 10px 12px; border-radius: 6px; color: var(--muted); font-size: 14px; }
+    nav a:hover { color: var(--accent); background: #e7ede4; }
+    .source { display: block; margin-top: 34px; padding-top: 22px; border-top: 1px solid var(--line); font-size: 13px; color: var(--muted); }
+    .source:hover { color: var(--accent); }
+    main { min-width: 0; padding: 48px 56px 28px; }
+    h1 { margin: 10px 0 12px; font-size: clamp(30px, 4vw, 44px); line-height: 1.3; letter-spacing: -1px; }
+    .intro { max-width: 650px; margin: 0; color: var(--muted); font-size: 15px; }
+    .setup { display: block; margin-top: 22px; padding: 14px 18px; border: 1px solid var(--line); border-radius: 8px; background: var(--paper); font-size: 13px; }
+    .setup strong { color: var(--accent); }
+    .setup span { display: block; margin-top: 3px; color: var(--muted); }
+    .setup:hover { border-color: #7b9c7e; background: #fbfdf9; }
+    .reading { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); margin-top: 28px; border: 1px solid var(--line); border-radius: 10px; background: #eaf0e6; overflow: hidden; }
+    .reading a { padding: 20px; }
+    .reading a + a { border-left: 1px solid #d5dfcf; }
+    .reading a:hover { background: #dfe9d9; }
+    .reading small { display: block; color: var(--accent); font-size: 11px; letter-spacing: 1px; }
+    .reading strong { display: block; margin: 5px 0; font-size: 16px; }
+    .reading span { color: var(--muted); font-size: 12px; }
+    section { margin-top: 38px; }
+    .section-heading { display: flex; align-items: baseline; gap: 12px; margin-bottom: 16px; }
+    .section-heading span { font-size: 12px; color: var(--accent); font-weight: 600; }
+    h2 { margin: 0; font-size: 21px; font-weight: 650; }
+    .cards { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+    .card { position: relative; display: flex; flex-direction: column; padding: 20px 40px 18px 22px; border: 1px solid var(--line); border-radius: 8px; background: var(--paper); }
+    .card::after { content: "↗"; position: absolute; right: 18px; top: 18px; color: #8c9b8c; }
+    .card:hover { border-color: #7b9c7e; background: #fbfdf9; }
+    .card:hover::after { color: var(--accent); }
+    h3 { margin: 0 0 6px; font-size: 16px; font-weight: 650; }
+    .card p { margin: 0 0 14px; color: var(--muted); font-size: 13px; }
+    .filename { margin-top: auto; font-family: Consolas, "Courier New", monospace; font-size: 11px; color: #708071; overflow-wrap: anywhere; }
+    footer { margin-top: 40px; padding: 20px 0 8px; border-top: 1px solid var(--line); color: var(--muted); font-size: 12px; }
+    footer p { margin: 4px 0; }
+    footer code { overflow-wrap: anywhere; }
+    @media (max-width: 1050px) { main { padding: 38px 30px 24px; } .layout { grid-template-columns: 210px minmax(0, 1fr); } aside { padding: 36px 22px; } }
+    @media (max-width: 760px) {
+      .layout { display: block; }
+      aside { position: static; height: auto; padding: 22px; border-right: 0; border-bottom: 1px solid var(--line); }
+      .brand { font-size: 23px; } .subtitle { margin-bottom: 16px; }
+      .nav-label, .source { display: none; }
+      nav { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 0; }
+      nav a { padding: 6px 9px; font-size: 12px; }
+      main { padding: 28px 22px 20px; }
+      .reading { grid-template-columns: 1fr; }
+      .reading a { padding: 14px 18px; }
+      .reading a + a { border-left: 0; border-top: 1px solid #d5dfcf; }
+      .cards { grid-template-columns: 1fr; }
+    }
+    @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+    @media print {
+      .layout { display: block; } aside, .skip { display: none; }
+      main { padding: 0; } body { background: #fff; }
+      .card { break-inside: avoid; } .reading { background: #fff; }
+    }
+  </style>
+</head>
+<body>
+  <a class="skip" href="#main">跳到文档内容</a>
+  <div class="layout">
+    <aside>
+      <a class="brand" href="#main">HGame<span>.</span></a>
+      <p class="subtitle">框架使用文档 / 开发参考</p>
+      <div class="nav-label">文档目录</div>
+      <nav aria-label="文档分类">
+        <a href="#foundation">架构与模块</a>
+        <a href="#ui-events">UI 与事件</a>
+        <a href="#resources-config">资源与配置</a>
+        <a href="#updates-build">热更与构建</a>
+        <a href="#tools">工具与排障</a>
+        <a href="#ai-usage">AI 使用</a>
+      </nav>
+      <a class="source" href="../.codex/skills/hgame-dev/SKILL.md">查看 hgame-dev 文档路由 ↗</a>
+    </aside>
+    <main id="main">
+      <header>
+        <div class="eyebrow">HGAME / DOCUMENTATION</div>
+        <h1>从这里开始使用 HGame</h1>
+        <p class="intro">框架结构、模块 API 与常见开发模式的统一入口。先了解项目分层和模块访问方式，再按当前任务查阅对应专题。</p>
+        <a class="setup" href="markdown-viewer-setup.html"><strong>首次阅读？安装 Markdown 阅读扩展 ↗</strong><span>让浏览器为 MD 文档显示标题、表格与代码排版。Chrome / Edge 配置一次，修改文档后刷新即可。</span></a>
+        <div class="reading" aria-label="推荐阅读顺序">
+          <a href="../.codex/skills/hgame-dev/references/architecture.md"><small>01 / 了解结构</small><strong>架构与项目结构</strong><span>目录落位、程序集边界、启动流程</span></a>
+          <a href="../.codex/skills/hgame-dev/references/modules.md"><small>02 / 使用模块</small><strong>模块 API 速查</strong><span>GameModule 入口与常用模块示例</span></a>
+          <a href="../.codex/skills/hgame-dev/references/naming-rules.md"><small>03 / 遵循规范</small><strong>代码与命名规则</strong><span>命名、UI 节点前缀、异步与日志</span></a>
+        </div>
+      </header>
+
+      <section id="foundation" aria-labelledby="foundation-title">
+        <div class="section-heading"><span>01</span><h2 id="foundation-title">架构与模块</h2></div>
+        <div class="cards">
+          <a class="card" href="../README.md"><h3>框架介绍与快速开始</h3><p>了解 HGame 的功能概览、核心模块与开发入口。</p><span class="filename">README.md</span></a>
+          <a class="card" href="../.codex/skills/hgame-dev/references/architecture.md"><h3>架构与项目结构</h3><p>Runtime、AOT 与 HotFix 分层，程序集依赖、目录结构和启动流程。</p><span class="filename">architecture.md</span></a>
+          <a class="card" href="../.codex/skills/hgame-dev/references/modules.md"><h3>模块 API 速查</h3><p>计时器、场景、音频、本地化、敏感词、动画、状态机、对象池、DataCenter 与内存池。</p><span class="filename">modules.md</span></a>
+          <a class="card" href="../.codex/skills/hgame-dev/references/naming-rules.md"><h3>代码规范与命名规则</h3><p>字段命名、UI 节点前缀、UniTask 异步、DLogger 日志与常见禁止模式。</p><span class="filename">naming-rules.md</span></a>
+        </div>
+      </section>
+
+      <section id="ui-events" aria-labelledby="ui-events-title">
+        <div class="section-heading"><span>02</span><h2 id="ui-events-title">UI 与事件</h2></div>
+        <div class="cards">
+          <a class="card" href="../.codex/skills/hgame-dev/references/ui-lifecycle.md"><h3>UI 生命周期与核心 API</h3><p>UIWindow、UIWidget 生命周期，窗口显示与关闭、层级管理、节点绑定和代码生成。</p><span class="filename">ui-lifecycle.md</span></a>
+          <a class="card" href="../.codex/skills/hgame-dev/references/ui-patterns.md"><h3>UI 进阶模式</h3><p>Widget 创建、列表刷新、弹窗队列、模态背景与安全区适配。</p><span class="filename">ui-patterns.md</span></a>
+          <a class="card" href="../.codex/skills/hgame-dev/references/event-system.md"><h3>事件系统</h3><p>GameEvent、GameEventDriver、AddUIEvent、事件分组与接口事件。</p><span class="filename">event-system.md</span></a>
+          <a class="card" href="../.codex/skills/hgame-dev/references/event-antipatterns.md"><h3>事件系统反模式与避坑</h3><p>事件内存泄漏、接口事件无响应与事件风暴的定位方法。</p><span class="filename">event-antipatterns.md</span></a>
+          <a class="card" href="../.codex/skills/hgame-dev/references/reddot-system.md"><h3>红点系统</h3><p>RedDotModule、红点树路径、注册刷新与 UI 绑定。</p><span class="filename">reddot-system.md</span></a>
+        </div>
+      </section>
+
+      <section id="resources-config" aria-labelledby="resources-config-title">
+        <div class="section-heading"><span>03</span><h2 id="resources-config-title">资源与配置</h2></div>
+        <div class="cards">
+          <a class="card" href="../.codex/skills/hgame-dev/references/resource-api.md"><h3>资源加载与卸载 API</h3><p>ResourceModule、资源加载、GameObject 实例化、UnloadAsset 与 SetSprite。</p><span class="filename">resource-api.md</span></a>
+          <a class="card" href="../.codex/skills/hgame-dev/references/resource-patterns.md"><h3>资源管理模式</h3><p>资源生命周期、UI 资源持有、缓存、泄漏排查与低内存处理。</p><span class="filename">resource-patterns.md</span></a>
+          <a class="card" href="../.codex/skills/hgame-dev/references/luban-config.md"><h3>Luban 配置消费</h3><p>业务代码读取配置，ConfigSystem 与 ConfigMgr 封装。编辑表结构、Excel 或导表脚本时参阅 luban-dev。</p><span class="filename">luban-config.md</span></a>
+          <a class="card" href="../.codex/skills/luban-dev/SKILL.md"><h3>Luban 配置编辑指南</h3><p>配置表结构与数据编辑、校验、引用检查、导表和运行时消费链路。</p><span class="filename">luban-dev/SKILL.md</span></a>
+        </div>
+      </section>
+
+      <section id="updates-build" aria-labelledby="updates-build-title">
+        <div class="section-heading"><span>04</span><h2 id="updates-build-title">热更与构建</h2></div>
+        <div class="cards">
+          <a class="card" href="../.codex/skills/hgame-dev/references/hotfix-workflow.md"><h3>热更代码工作流</h3><p>HybridCLR、热更 DLL 加载、AOT 元数据与热更程序集边界。</p><span class="filename">hotfix-workflow.md</span></a>
+          <a class="card" href="../.codex/skills/hgame-dev/references/hotpatch-workflow.md"><h3>热更资源包工作流</h3><p>YooAsset 包版本、下载器、缓存清理与更新设置。</p><span class="filename">hotpatch-workflow.md</span></a>
+          <a class="card" href="../.codex/skills/hgame-dev/references/build-pipeline.md"><h3>构建打包工作流</h3><p>Unity 整包、AssetBundle 资源包与 Jenkins 命令行自动化打包。</p><span class="filename">build-pipeline.md</span></a>
+        </div>
+      </section>
+
+      <section id="tools" aria-labelledby="tools-title">
+        <div class="section-heading"><span>05</span><h2 id="tools-title">工具与排障</h2></div>
+        <div class="cards">
+          <a class="card" href="../.codex/skills/hgame-dev/references/mcp-unity-cli.md"><h3>Unity CLI 与 MCP 工具指南</h3><p>通过 unity-cli / com.unity.pipeline 操作场景、GameObject、Prefab、脚本和编辑器。</p><span class="filename">mcp-unity-cli.md</span></a>
+          <a class="card" href="../.codex/skills/hgame-dev/references/mcp-visual.md"><h3>材质与视觉操作</h3><p>材质、Shader、纹理、动画、摄像机与粒子等视觉资源的工具用法。</p><span class="filename">mcp-visual.md</span></a>
+          <a class="card" href="../.codex/skills/hgame-dev/references/troubleshooting.md"><h3>常见问题排查</h3><p>编译报错、热更失败、资源加载失败、UI 不显示、事件与配置问题。</p><span class="filename">troubleshooting.md</span></a>
+          <a class="card" href="unity-cli-mcp-test-report.md"><h3>Unity CLI MCP 工具验证报告</h3><p>查阅仓库已有的工具验证记录与结果。</p><span class="filename">unity-cli-mcp-test-report.md</span></a>
+        </div>
+      </section>
+
+      <section id="ai-usage" aria-labelledby="ai-usage-title">
+        <div class="section-heading"><span>06</span><h2 id="ai-usage-title">AI 使用</h2></div>
+        <div class="cards">
+          <a class="card" href="ai/initialization.md"><h3>AI 初始化操作</h3><p>Clone 后准备环境、恢复共享配置链接、启动 AI 客户端并验证 MCP 连接。</p><span class="filename">ai/initialization.md</span></a>
+          <a class="card" href="ai/workflows.md"><h3>AI 工作流</h3><p>普通任务、Comet Native、Comet Classic 与 OpenSpec 的选择、推进和验收。</p><span class="filename">ai/workflows.md</span></a>
+          <a class="card" href="ai/mcp.md"><h3>MCP 介绍与连接</h3><p>MCP 的职责，Unity CLI 与 Rider 服务的配置、连接检查及常见问题。</p><span class="filename">ai/mcp.md</span></a>
+          <a class="card" href="ai/skills.md"><h3>Skill 介绍与使用</h3><p>技能如何提供项目规范与工作方法，常用技能选择、调用示例和维护入口。</p><span class="filename">ai/skills.md</span></a>
+        </div>
+      </section>
+
+      <footer>
+        <p>本文为文档索引，点击条目打开原始 Markdown 文件。若浏览器显示原始文本，请参阅 <a href="markdown-viewer-setup.html">Markdown 阅读扩展安装指南</a>。</p>
+        <p>主启动场景：<code>GameUnity/Assets/Scenes/GameStart/GameStart.unity</code>。README 中的 LaunchScene 启动说明已过期。</p>
+        <p>文档与当前源码不一致时，以当前源码为准。</p>
+      </footer>
+    </main>
+  </div>
+</body>
+</html>
